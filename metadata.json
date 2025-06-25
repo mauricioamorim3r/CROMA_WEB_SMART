@@ -1,0 +1,6 @@
+{
+  "name": "Chromatography Validation Report",
+  "description": "A web application to validate chromatography results based on A.G.A Report No. 8 and Statistical Process Control (CEP) criteria, and to manage a checklist for analytical bulletins.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
