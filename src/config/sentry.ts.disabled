@@ -1,0 +1,117 @@
+import * as Sentry from '@sentry/react';
+
+// Configuração segura do Sentry
+export const sentryConfig = {
+  // Busca a DSN das variáveis de ambiente
+  dsn: (import.meta as any).env?.VITE_SENTRY_DSN || '',
+  
+  // Configurações baseadas no ambiente
+  environment: (import.meta as any).env?.VITE_SENTRY_ENVIRONMENT || 'development',
+  
+  // Taxa de amostragem (0.0 a 1.0)
+  sampleRate: parseFloat((import.meta as any).env?.VITE_SENTRY_SAMPLE_RATE || '1.0'),
+  
+  // Configurações de performance
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  
+  // Configurações de release
+  release: (import.meta as any).env?.VITE_APP_VERSION || '1.0.0',
+  
+  // Configurações específicas da aplicação
+  beforeSend(event: any) {
+    // Filtrar informações sensíveis
+    if (event.exception) {
+      const error = event.exception.values?.[0];
+      if (error && error.stacktrace) {
+        // Remove paths absolutos que podem revelar estrutura do sistema
+        error.stacktrace.frames?.forEach((frame: any) => {
+          if (frame.filename) {
+            frame.filename = frame.filename.replace(/^.*[\\\/]/, '');
+          }
+        });
+      }
+    }
+    return event;
+  },
+  
+  // Tags personalizadas
+  initialScope: {
+    tags: {
+      app: 'validador-cromatografia',
+      platform: 'electron-react'
+    },
+    user: {
+      // Não incluir informações pessoais por padrão
+      id: 'anonymous'
+    }
+  }
+};
+
+// Validação da configuração
+export const isSentryConfigValid = (): boolean => {
+  if (!sentryConfig.dsn) {
+    console.warn('⚠️  SENTRY_DSN não encontrada nas variáveis de ambiente');
+    return false;
+  }
+  
+  if (!sentryConfig.dsn.startsWith('https://')) {
+    console.error('❌ SENTRY_DSN inválida');
+    return false;
+  }
+  
+  return true;
+};
+
+// Inicialização do Sentry
+export const initSentry = (): boolean => {
+  if (!isSentryConfigValid()) {
+    console.warn('⚠️ Sentry não inicializado - configuração inválida');
+    return false;
+  }
+  
+  try {
+    Sentry.init(sentryConfig);
+    console.log('✅ Sentry inicializado com sucesso');
+    logSentryStatus();
+    return true;
+  } catch (error) {
+    console.error('❌ Erro ao inicializar Sentry:', error);
+    return false;
+  }
+};
+
+// Log de status da configuração
+export const logSentryStatus = (): void => {
+  console.group('🔍 Status do Sentry');
+  console.log(`🏷️  Ambiente: ${sentryConfig.environment}`);
+  console.log(`📊 Sample Rate: ${sentryConfig.sampleRate}`);
+  console.log(`🚀 Release: ${sentryConfig.release}`);
+  console.log(`🔗 DSN configurada: ${sentryConfig.dsn ? '✅' : '❌'}`);
+  console.groupEnd();
+};
+
+// Utilities para captura de erros
+export const captureError = (error: Error, context?: any) => {
+  Sentry.captureException(error, { extra: context });
+};
+
+export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info') => {
+  Sentry.captureMessage(message, level);
+};
+
+export const addBreadcrumb = (message: string, category: string = 'custom') => {
+  Sentry.addBreadcrumb({
+    message,
+    category,
+    level: 'info',
+    timestamp: Date.now() / 1000,
+  });
+};
+
+export const setUser = (user: { id?: string; email?: string; username?: string }) => {
+  Sentry.setUser(user);
+};
+
+export const setTag = (key: string, value: string) => {
+  Sentry.setTag(key, value);
+}; 
