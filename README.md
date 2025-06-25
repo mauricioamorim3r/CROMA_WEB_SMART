@@ -1,83 +1,92 @@
-# 🧪 Validador de Cromatografia Web
+# 🧪 Validador de Cromatografia - Análise Crítica de Resultados Analíticos
 
-Aplicação web moderna para validação de relatórios de cromatografia, desenvolvida com React 19, Vite 6 e TypeScript.
+## 📋 Descrição
+Aplicação web completa para análise crítica e validação de resultados analíticos de cromatografia gasosa, desenvolvida com React 19, Vite 6 e TypeScript.
 
 ## 🚀 Funcionalidades
-
-- ✅ Validação completa de relatórios de cromatografia
-- 📊 Análise de dados AGA8 e critérios de validação
-- 🎨 Interface moderna e responsiva com TailwindCSS
-- 📱 Suporte completo a dispositivos móveis
-- ⚡ Performance otimizada com Vite
-- 🔧 TypeScript para tipagem segura
+- ✅ Validação de critérios AGA8 
+- 📊 Análise de componentes e propriedades
+- 🔍 Verificação de contaminantes do ar
+- 📝 Geração de relatórios em PDF
+- 💾 Gerenciamento de templates Excel
+- 📈 Dashboard de analytics
+- ✅ Seção de aprovação técnica
 
 ## 🛠️ Tecnologias
+- **Frontend**: React 19 + TypeScript
+- **Build**: Vite 6
+- **Styling**: TailwindCSS
+- **Charts**: Chart.js
+- **PDF**: jsPDF
+- **Excel**: SheetJS
 
-- **React 19** - Framework frontend
-- **Vite 6** - Build tool e dev server
-- **TypeScript** - Tipagem estática
-- **TailwindCSS** - Estilização
-- **Vercel** - Deploy e hospedagem
-
-## 🏃‍♂️ Como Executar
+## 🔧 Instalação e Execução
 
 ### Pré-requisitos
-- Node.js 18+ 
-- npm ou yarn
+- Node.js 18+
+- npm
 
-### Instalação
+### Comandos
 ```bash
-# Clone o repositório
-git clone https://github.com/mauricioamorim3r/GEMINI_CROMA_WEB.git
-
-# Entre no diretório
-cd GEMINI_CROMA_WEB
-
-# Instale as dependências
+# Instalar dependências
 npm install
 
-# Execute em modo desenvolvimento
+# Executar em desenvolvimento
 npm run dev
-```
 
-A aplicação estará disponível em `http://localhost:5173`
+# Build para produção
+npm run build
 
-## 📦 Scripts Disponíveis
+# Preview do build
+npm run preview
 
-```bash
-npm run dev          # Servidor de desenvolvimento
-npm run build        # Build para produção
-npm run build:vercel # Build otimizado para Vercel
-npm run preview      # Preview do build de produção
-npm run lint         # Verificação de código
+# Testes
+npm test
 ```
 
 ## 🌐 Deploy
-
-Esta aplicação está configurada para deploy automático no Vercel. Qualquer push para a branch `main` disparará um novo deploy.
+- **Vercel**: Configurado com `vercel.json`
+- **GitHub Actions**: Deploy automático
+- **Build**: Otimizado para produção
 
 ## 📁 Estrutura do Projeto
-
 ```
 GEMINI_CROMA_WEB/
-├── components/          # Componentes React
-├── src/                # Código fonte adicional
-├── dist/               # Build de produção
-├── App.tsx             # Componente principal
-├── types.ts            # Definições TypeScript
-├── constants.ts        # Constantes da aplicação
-├── vercel.json         # Configuração Vercel
-└── vite.config.ts      # Configuração Vite
+├── src/
+│   ├── main.tsx          # Entry point
+│   ├── index.css         # Estilos globais
+│   └── vite-env.d.ts     # Tipos do Vite
+├── components/           # Componentes React
+├── App.tsx              # Componente principal
+├── types.ts             # Definições de tipos
+├── constants.ts         # Constantes da aplicação
+├── vercel.json          # Configuração Vercel
+└── package.json         # Dependências
+
 ```
 
-## 🧪 Validação de Cromatografia
+## 🔍 Componentes Principais
+- `AGA8CriteriaIndicator` - Indicadores de critérios AGA8
+- `ComponentTable` - Tabela de componentes
+- `PropertiesTable` - Propriedades calculadas
+- `PDFGenerator` - Geração de relatórios
+- `ExcelTemplateManager` - Gerenciamento de templates
 
-A aplicação realiza validação completa de:
-- Dados de cromatografia
-- Critérios AGA8
-- Parâmetros de qualidade
-- Relatórios técnicos
+## 📊 Validações Implementadas
+- Critérios AGA8 para gás natural
+- Limites de contaminantes
+- Propriedades físico-químicas
+- Condições de amostragem
 
-## 📄 Licença
+## 🎯 Uso
+1. Carregue um template Excel ou insira dados manualmente
+2. A aplicação valida automaticamente os critérios AGA8
+3. Visualize análises e propriedades calculadas
+4. Gere relatório PDF com conclusões técnicas
+5. Aprove ou rejeite o laudo analítico
 
-Este projeto está sob licença MIT.
+## 📝 Licença
+Este projeto é proprietário e destinado ao uso interno.
+
+---
+**Desenvolvido para análise crítica e validação de resultados analíticos de cromatografia gasosa**
