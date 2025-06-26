@@ -48,3 +48,5 @@ playwright-report/
 # Cache
 .cache/
 .parcel-cache/
+
+.fake

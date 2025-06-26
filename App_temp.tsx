@@ -167,7 +167,7 @@ const App: React.FC = () => {
   // UI modals state
   const [showManualEntryModal, setShowManualEntryModal] = useState(false);
   const [showCEPHistoryModal, setShowCEPHistoryModal] = useState(false);
-  const [requiredFieldsValidation, setRequiredFieldsValidation] = useState({ isValid: true, missingFields: [] as string[] });
+
 
   // Checklist NBR ISO/IEC 17025 state - inicializado vazio
   const [checklistItems, setChecklistItems] = useState([
@@ -188,28 +188,24 @@ const App: React.FC = () => {
     { id: 15, description: 'Identificação dos responsáveis pela elaboração e aprovação do boletim', status: null, observation: '' },
   ]);
 
-     // Estados para controlar expansão/contração das seções
-   const [expandedSections] = useState({
-     parte1: {
-       item1: true, // Lista de verificação sempre expandida por padrão
-       item2: true,
-       item3: true,
-       item4: true,
-       item5: true,
-       item6: true
-     },
-     parte2: {
-       item5: true,
-       item6: true,
-       item7: true,
-       item8: true
-     },
-     parte3: {
-       item6: true,
-       item7: true,
-       item8: true
-     }
-   });
+  // Estados para controlar expansão/contração das seções
+  const [expandedSections, setExpandedSections] = useState({
+    parte1: {
+      item1: true, // Lista de verificação sempre expandida por padrão
+      item2: true,
+      item3: true,
+      item4: true
+    },
+    parte2: {
+      item5: true,
+      item6: true
+    },
+    parte3: {
+      item6: true,
+      item7: true,
+      item8: true
+    }
+  });
 
   // ============================================================================
   // INTEGRAÇÃO CEP - CONTROLE ESTATÍSTICO DE PROCESSO
@@ -239,66 +235,6 @@ const App: React.FC = () => {
       }));
     }
   }, [overallCEPStatus, reportData.referenciaCepStatus]);
-
-  // Sincronizar resultados CEP com componentes e propriedades
-  useEffect(() => {
-    let hasChanges = false;
-    
-    // Atualizar componentes com resultados CEP
-    const updatedComponents = reportData.components.map(comp => {
-      const cepResult = cepComponentResults.find(r => r.componentName === comp.name);
-      if (cepResult && cepResult.statistics.sampleCount >= 2) {
-        const newCepStatus = cepResult.status;
-        const newLowerLimit = cepResult.statistics.lowerControlLimit.toFixed(3);
-        const newUpperLimit = cepResult.statistics.upperControlLimit.toFixed(3);
-        
-        if (comp.cepStatus !== newCepStatus || 
-            comp.cepLowerLimit !== newLowerLimit || 
-            comp.cepUpperLimit !== newUpperLimit) {
-          hasChanges = true;
-          return {
-            ...comp,
-            cepStatus: newCepStatus,
-            cepLowerLimit: newLowerLimit,
-            cepUpperLimit: newUpperLimit
-          };
-        }
-      }
-      return comp;
-    });
-
-    // Atualizar propriedades com resultados CEP
-    const updatedProperties = reportData.standardProperties.map(prop => {
-      const cepResult = cepPropertyResults.find(r => r.componentName === prop.name);
-      if (cepResult && cepResult.statistics.sampleCount >= 2) {
-        const newCepStatus = cepResult.status;
-        const newLowerLimit = cepResult.statistics.lowerControlLimit.toFixed(4);
-        const newUpperLimit = cepResult.statistics.upperControlLimit.toFixed(4);
-        
-        if (prop.cepStatus !== newCepStatus || 
-            prop.cepLowerLimit !== newLowerLimit || 
-            prop.cepUpperLimit !== newUpperLimit) {
-          hasChanges = true;
-          return {
-            ...prop,
-            cepStatus: newCepStatus,
-            cepLowerLimit: newLowerLimit,
-            cepUpperLimit: newUpperLimit
-          };
-        }
-      }
-      return prop;
-    });
-
-    // Aplicar mudanças se houver
-    if (hasChanges) {
-      setReportData(prev => ({
-        ...prev,
-        components: updatedComponents,
-        standardProperties: updatedProperties
-      }));
-    }
-  }, [cepComponentResults, cepPropertyResults, reportData.components, reportData.standardProperties]);
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -518,6 +454,7 @@ const App: React.FC = () => {
     const propaneValue = getComponentValue('Propano (C₃)');
     const iButaneValue = getComponentValue('i-Butano (iC₄)');
     const nButaneValue = getComponentValue('n-Butano (nC₄)');
+
 
 
     const updatedComponents = reportData.components.map(comp => {
@@ -1290,12 +1227,7 @@ const App: React.FC = () => {
         comp.id === id ? { ...comp, [field]: value } : comp
       ),
     }));
-    
-    // Executar validação CEP automaticamente quando % molar é alterado
-    if (field === 'molarPercent' && value && String(value).trim() !== '') {
-      setTimeout(() => runCEPValidation(), 500); // Delay para aguardar setState
-    }
-  }, [runCEPValidation]);
+  }, []);
   
   const handleStandardPropertyChange = useCallback((id: string, field: keyof SampleProperty, value: string) => {
     setReportData(prev => ({
@@ -1321,1437 +1253,16 @@ const App: React.FC = () => {
     );
   }, []);
 
-
-
-  // ============================================================================
-  // DADOS HISTÓRICOS PARA IMPORTAÇÃO
-  // ============================================================================
-  
-  // Função para importar dados históricos da tabela fornecida pelo usuário
-  const importHistoricalData = useCallback(() => {
-    // Dados extraídos da imagem fornecida - 15 primeiras linhas da tabela histórica
-    const historicalSamples = [
-      {
-        boletimNumber: "328.19REV.00",
-        date: "2019-03-20",
-        components: {
-          "Metano (C₁)": 99.063,
-          "Etano (C₂)": 0.096,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.003,
-          "n-Butano (nC₄)": 0.003,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.230,
-          "Dióxido de Carbono (CO₂)": 0.594
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.677,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "414.19REV.00",
-        date: "2019-04-13",
-        components: {
-          "Metano (C₁)": 99.046,
-          "Etano (C₂)": 0.086,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.002,
-          "n-Butano (nC₄)": 0.003,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.241,
-          "Dióxido de Carbono (CO₂)": 0.611
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.677,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "518.19REV.00",
-        date: "2019-05-09",
-        components: {
-          "Metano (C₁)": 99.053,
-          "Etano (C₂)": 0.085,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.003,
-          "n-Butano (nC₄)": 0.003,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.246,
-          "Dióxido de Carbono (CO₂)": 0.599
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.677,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "629.19REV.00",
-        date: "2019-06-20",
-        components: {
-          "Metano (C₁)": 98.982,
-          "Etano (C₂)": 0.091,
-          "Propano (C₃)": 0.010,
-          "i-Butano (iC₄)": 0.000,
-          "n-Butano (nC₄)": 0.005,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.253,
-          "Dióxido de Carbono (CO₂)": 0.720
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "699.19REV.00",
-        date: "2019-07-01",
-        components: {
-          "Metano (C₁)": 98.933,
-          "Etano (C₂)": 0.081,
-          "Propano (C₃)": 0.008,
-          "i-Butano (iC₄)": 0.000,
-          "n-Butano (nC₄)": 0.004,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.000,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.252,
-          "Dióxido de Carbono (CO₂)": 0.721
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "779.19REV.00",
-        date: "2019-08-07",
-        components: {
-          "Metano (C₁)": 98.579,
-          "Etano (C₂)": 0.090,
-          "Propano (C₃)": 0.008,
-          "i-Butano (iC₄)": 0.000,
-          "n-Butano (nC₄)": 0.005,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.253,
-          "Dióxido de Carbono (CO₂)": 1.170
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "899.19REV.00",
-        date: "2019-08-15",
-        components: {
-          "Metano (C₁)": 98.827,
-          "Etano (C₂)": 0.088,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.004,
-          "n-Butano (nC₄)": 0.002,
-          "Isopentano": 0.001,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.245,
-          "Dióxido de Carbono (CO₂)": 0.777
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "944.19REV.00",
-        date: "2019-11-09",
-        components: {
-          "Metano (C₁)": 98.696,
-          "Etano (C₂)": 0.089,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.004,
-          "n-Butano (nC₄)": 0.001,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.000,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.217,
-          "Dióxido de Carbono (CO₂)": 0.783
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "962.19REV.00",
-        date: "2019-12-27",
-        components: {
-          "Metano (C₁)": 98.916,
-          "Etano (C₂)": 0.081,
-          "Propano (C₃)": 0.008,
-          "i-Butano (iC₄)": 0.002,
-          "n-Butano (nC₄)": 0.004,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.000,
-          "Hexano": 0.000,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.239,
-          "Dióxido de Carbono (CO₂)": 0.750
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "1074.19REV.00",
-        date: "2019-10-24",
-        components: {
-          "Metano (C₁)": 98.857,
-          "Etano (C₂)": 0.093,
-          "Propano (C₃)": 0.010,
-          "i-Butano (iC₄)": 0.003,
-          "n-Butano (nC₄)": 0.004,
-          "Isopentano": 0.001,
-          "N-Pentano": 0.001,
-          "Hexano": 0.000,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.233,
-          "Dióxido de Carbono (CO₂)": 0.798
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "1149.19REV.00",
-        date: "2019-11-20",
-        components: {
-          "Metano (C₁)": 98.856,
-          "Etano (C₂)": 0.085,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.003,
-          "n-Butano (nC₄)": 0.004,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.000,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.210,
-          "Dióxido de Carbono (CO₂)": 0.813
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.680,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "1228.19REV.00",
-        date: "2019-12-18",
-        components: {
-          "Metano (C₁)": 98.853,
-          "Etano (C₂)": 0.089,
-          "Propano (C₃)": 0.009,
-          "i-Butano (iC₄)": 0.003,
-          "n-Butano (nC₄)": 0.004,
-          "Isopentano": 0.001,
-          "N-Pentano": 0.001,
-          "Hexano": 0.001,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.295,
-          "Dióxido de Carbono (CO₂)": 0.744
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "0056.20REV.00",
-        date: "2020-01-16",
-        components: {
-          "Metano (C₁)": 98.899,
-          "Etano (C₂)": 0.089,
-          "Propano (C₃)": 0.000,
-          "i-Butano (iC₄)": 0.003,
-          "n-Butano (nC₄)": 0.004,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.000,
-          "Hexano": 0.000,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.257,
-          "Dióxido de Carbono (CO₂)": 0.748
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.679,
-          molarMass: 16.3000
-        }
-      },
-      {
-        boletimNumber: "0156.20REV.00",
-        date: "2020-02-11",
-        components: {
-          "Metano (C₁)": 99.025,
-          "Etano (C₂)": 0.081,
-          "Propano (C₃)": 0.000,
-          "i-Butano (iC₄)": 0.001,
-          "n-Butano (nC₄)": 0.002,
-          "Isopentano": 0.000,
-          "N-Pentano": 0.000,
-          "Hexano": 0.000,
-          "Heptano": 0.000,
-          "Octano": 0.000,
-          "Nonano": 0.000,
-          "Decano": 0.000,
-          "Oxigênio": 0.000,
-          "Nitrogênio (N₂)": 0.150,
-          "Dióxido de Carbono (CO₂)": 0.741
-        },
-        properties: {
-          compressibilityFactor: 0.9981,
-          specificMass: 0.678,
-          molarMass: 16.3000
-        }
-      },
-             {
-         boletimNumber: "0933.21REV.00",
-         date: "2021-12-09",
-         components: {
-           "Metano (C₁)": 97.815,
-           "Etano (C₂)": 0.265,
-           "Propano (C₃)": 0.199,
-           "i-Butano (iC₄)": 0.000,
-           "n-Butano (nC₄)": 0.009,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.000,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.872,
-           "Dióxido de Carbono (CO₂)": 0.849
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.686,
-           molarMass: 16.4777
-         }
-       },
-       // Dados restantes da segunda imagem (2022-2024)
-       {
-         boletimNumber: "0133.22REV.00",
-         date: "2022-02-04",
-         components: {
-           "Metano (C₁)": 98.636,
-           "Etano (C₂)": 0.080,
-           "Propano (C₃)": 0.104,
-           "i-Butano (iC₄)": 0.000,
-           "n-Butano (nC₄)": 0.000,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.000,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.298,
-           "Dióxido de Carbono (CO₂)": 0.882
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.682,
-           molarMass: 16.3660
-         }
-       },
-       {
-         boletimNumber: "0259.22REV.00",
-         date: "2022-03-03",
-         components: {
-           "Metano (C₁)": 99.502,
-           "Etano (C₂)": 0.082,
-           "Propano (C₃)": 0.150,
-           "i-Butano (iC₄)": 0.001,
-           "n-Butano (nC₄)": 0.002,
-           "Isopentano": 0.001,
-           "N-Pentano": 0.001,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.542,
-           "Dióxido de Carbono (CO₂)": 0.718
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.682,
-           molarMass: 16.3650
-         }
-       },
-       {
-         boletimNumber: "0371.22REV.00",
-         date: "2022-04-01",
-         components: {
-           "Metano (C₁)": 98.636,
-           "Etano (C₂)": 0.081,
-           "Propano (C₃)": 0.048,
-           "i-Butano (iC₄)": 0.000,
-           "n-Butano (nC₄)": 0.007,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.001,
-           "Hexano": 0.003,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.324,
-           "Dióxido de Carbono (CO₂)": 0.899
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.682,
-           molarMass: 16.3562
-         }
-       },
-       {
-         boletimNumber: "0463.22REV.00",
-         date: "2022-04-29",
-         components: {
-           "Metano (C₁)": 98.401,
-           "Etano (C₂)": 0.082,
-           "Propano (C₃)": 0.318,
-           "i-Butano (iC₄)": 0.001,
-           "n-Butano (nC₄)": 0.004,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.286,
-           "Dióxido de Carbono (CO₂)": 0.907
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.685,
-           molarMass: 16.4347
-         }
-       },
-       {
-         boletimNumber: "0549.22REV.00",
-         date: "2022-05-26",
-         components: {
-           "Metano (C₁)": 98.642,
-           "Etano (C₂)": 0.077,
-           "Propano (C₃)": 0.081,
-           "i-Butano (iC₄)": 0.000,
-           "n-Butano (nC₄)": 0.003,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.293,
-           "Dióxido de Carbono (CO₂)": 0.903
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.682,
-           molarMass: 16.3666
-         }
-       },
-       {
-         boletimNumber: "0693.22REV.00",
-         date: "2022-06-17",
-         components: {
-           "Metano (C₁)": 98.521,
-           "Etano (C₂)": 0.090,
-           "Propano (C₃)": 0.092,
-           "i-Butano (iC₄)": 0.004,
-           "n-Butano (nC₄)": 0.013,
-           "Isopentano": 0.008,
-           "N-Pentano": 0.013,
-           "Hexano": 0.024,
-           "Heptano": 0.021,
-           "Octano": 0.012,
-           "Nonano": 0.003,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.280,
-           "Dióxido de Carbono (CO₂)": 0.929
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.685,
-           molarMass: 16.4419
-         }
-       },
-       {
-         boletimNumber: "1232.22REV.00",
-         date: "2022-10-18",
-         components: {
-           "Metano (C₁)": 98.220,
-           "Etano (C₂)": 0.072,
-           "Propano (C₃)": 0.017,
-           "i-Butano (iC₄)": 0.002,
-           "n-Butano (nC₄)": 0.004,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.001,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.953,
-           "Dióxido de Carbono (CO₂)": 0.724
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.679,
-           molarMass: 16.3058
-         }
-       },
-       {
-         boletimNumber: "1315.22REV.00",
-         date: "2022-11-09",
-         components: {
-           "Metano (C₁)": 98.348,
-           "Etano (C₂)": 0.076,
-           "Propano (C₃)": 0.014,
-           "i-Butano (iC₄)": 0.002,
-           "n-Butano (nC₄)": 0.003,
-           "Isopentano": 0.001,
-           "N-Pentano": 0.001,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.666,
-           "Dióxido de Carbono (CO₂)": 0.888
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.683,
-           molarMass: 16.3630
-         }
-       },
-       {
-         boletimNumber: "1412.22REV.00",
-         date: "2022-12-27",
-         components: {
-           "Metano (C₁)": 98.450,
-           "Etano (C₂)": 0.078,
-           "Propano (C₃)": 0.230,
-           "i-Butano (iC₄)": 0.000,
-           "n-Butano (nC₄)": 0.004,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.324,
-           "Dióxido de Carbono (CO₂)": 0.913
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.684,
-           molarMass: 16.4160
-         }
-       },
-       {
-         boletimNumber: "0113.23REV.00",
-         date: "2023-02-14",
-         components: {
-           "Metano (C₁)": 98.656,
-           "Etano (C₂)": 0.077,
-           "Propano (C₃)": 0.000,
-           "i-Butano (iC₄)": 0.004,
-           "n-Butano (nC₄)": 0.000,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.001,
-           "Hexano": 0.000,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.307,
-           "Dióxido de Carbono (CO₂)": 0.925
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.681,
-           molarMass: 16.3520
-         }
-       },
-       {
-         boletimNumber: "0180.23REV.00",
-         date: "2023-03-15",
-         components: {
-           "Metano (C₁)": 98.445,
-           "Etano (C₂)": 0.081,
-           "Propano (C₃)": 0.135,
-           "i-Butano (iC₄)": 0.004,
-           "n-Butano (nC₄)": 0.005,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.330,
-           "Dióxido de Carbono (CO₂)": 0.998
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.684,
-           molarMass: 16.4160
-         }
-       },
-       {
-         boletimNumber: "0243.23REV.00",
-         date: "2023-04-06",
-         components: {
-           "Metano (C₁)": 99.614,
-           "Etano (C₂)": 0.078,
-           "Propano (C₃)": 0.001,
-           "i-Butano (iC₄)": 0.002,
-           "n-Butano (nC₄)": 0.004,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.378,
-           "Dióxido de Carbono (CO₂)": 1.692
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.683,
-           molarMass: 16.4050
-         }
-       },
-       {
-         boletimNumber: "0320.23REV.00",
-         date: "2023-04-28",
-         components: {
-           "Metano (C₁)": 98.667,
-           "Etano (C₂)": 0.082,
-           "Propano (C₃)": 0.001,
-           "i-Butano (iC₄)": 0.002,
-           "n-Butano (nC₄)": 0.005,
-           "Isopentano": 0.001,
-           "N-Pentano": 0.000,
-           "Hexano": 0.000,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.252,
-           "Dióxido de Carbono (CO₂)": 0.790
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.679,
-           molarMass: 16.3100
-         }
-       },
-       {
-         boletimNumber: "0403.23REV.00",
-         date: "2023-05-07",
-         components: {
-           "Metano (C₁)": 99.063,
-           "Etano (C₂)": 0.074,
-           "Propano (C₃)": 0.000,
-           "i-Butano (iC₄)": 0.002,
-           "n-Butano (nC₄)": 0.004,
-           "Isopentano": 0.000,
-           "N-Pentano": 0.000,
-           "Hexano": 0.001,
-           "Heptano": 0.000,
-           "Octano": 0.000,
-           "Nonano": 0.000,
-           "Decano": 0.000,
-           "Oxigênio": 0.000,
-           "Nitrogênio (N₂)": 0.270,
-           "Dióxido de Carbono (CO₂)": 0.586
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.677,
-           molarMass: 16.2520
-         }
-       },
-       {
-         boletimNumber: "PTI23-10970",
-         date: "2023-12-20",
-         components: {
-           "Metano (C₁)": 97.626,
-           "Etano (C₂)": 0.085,
-           "Propano (C₃)": 0.140,
-           "i-Butano (iC₄)": 0.021,
-           "n-Butano (nC₄)": 0.091,
-           "Isopentano": 0.099,
-           "N-Pentano": 0.219,
-           "Hexano": 0.458,
-           "Heptano": 0.162,
-           "Octano": 0.017,
-           "Nonano": 0.001,
-           "Decano": 0.000,
-           "Oxigênio": 0.011,
-           "Nitrogênio (N₂)": 0.405,
-           "Dióxido de Carbono (CO₂)": 0.665
-         },
-         properties: {
-           compressibilityFactor: 0.9979,
-           specificMass: 0.710,
-           molarMass: 17.0313
-         }
-       },
-       {
-         boletimNumber: "PTI23-11279",
-         date: "2024-01-18",
-         components: {
-           "Metano (C₁)": 99.101,
-           "Etano (C₂)": 0.086,
-           "Propano (C₃)": 0.516,
-           "i-Butano (iC₄)": 0.002,
-           "n-Butano (nC₄)": 0.009,
-           "Isopentano": 0.003,
-           "N-Pentano": 0.003,
-           "Hexano": 0.011,
-           "Heptano": 0.011,
-           "Octano": 0.005,
-           "Nonano": 0.002,
-           "Decano": 0.000,
-           "Oxigênio": 0.015,
-           "Nitrogênio (N₂)": 0.349,
-           "Dióxido de Carbono (CO₂)": 0.782
-         },
-         properties: {
-           compressibilityFactor: 0.9980,
-           specificMass: 0.689,
-           molarMass: 16.5274
-         }
-       },
-       {
-         boletimNumber: "PTI24-11127",
-         date: "2024-02-15",
-         components: {
-           "Metano (C₁)": 97.289,
-           "Etano (C₂)": 0.131,
-           "Propano (C₃)": 0.139,
-           "i-Butano (iC₄)": 0.010,
-           "n-Butano (nC₄)": 0.027,
-           "Isopentano": 0.008,
-           "N-Pentano": 0.013,
-           "Hexano": 0.027,
-           "Heptano": 0.022,
-           "Octano": 0.014,
-           "Nonano": 0.003,
-           "Decano": 0.000,
-           "Oxigênio": 0.020,
-           "Nitrogênio (N₂)": 1.133,
-           "Dióxido de Carbono (CO₂)": 0.784
-         },
-         properties: {
-           compressibilityFactor: 0.9981,
-           specificMass: 0.691,
-           molarMass: 16.5859
-         }
-       },
-       {
-         boletimNumber: "PTI24-12161",
-         date: "2024-03-07",
-         components: {
-           "Metano (C₁)": 97.151,
-           "Etano (C₂)": 0.160,
-           "Propano (C₃)": 0.594,
-           "i-Butano (iC₄)": 0.026,
-           "n-Butano (nC₄)": 0.075,
-           "Isopentano": 0.040,
-           "N-Pentano": 0.077,
-           "Hexano": 0.170,
-           "Heptano": 0.112,
-           "Octano": 0.018,
-           "Nonano": 0.001,
-           "Decano": 0.000,
-           "Oxigênio": 0.104,
-           "Nitrogênio (N₂)": 0.684,
-           "Dióxido de Carbono (CO₂)": 0.788
-         },
-         properties: {
-           compressibilityFactor: 0.9979,
-           specificMass: 0.704,
-           molarMass: 16.8914
-         }
-       },
-       {
-         boletimNumber: "PTI24-12574",
-         date: "2024-04-03",
-         components: {
-           "Metano (C₁)": 97.821,
-           "Etano (C₂)": 0.094,
-           "Propano (C₃)": 0.638,
-           "i-Butano (iC₄)": 0.009,
-           "n-Butano (nC₄)": 0.015,
-           "Isopentano": 0.007,
-           "N-Pentano": 0.011,
-           "Hexano": 0.045,
-           "Heptano": 0.052,
-           "Octano": 0.018,
-           "Nonano": 0.002,
-           "Decano": 0.000,
-           "Oxigênio": 0.041,
-           "Nitrogênio (N₂)": 0.413,
-           "Dióxido de Carbono (CO₂)": 0.814
-         },
-         properties: {
-           compressibilityFactor: 0.9980,
-           specificMass: 0.693,
-           molarMass: 16.6309
-         }
-       },
-       {
-         boletimNumber: "PTI24-13046",
-         date: "2024-05-06",
-         components: {
-           "Metano (C₁)": 98.398,
-           "Etano (C₂)": 0.089,
-           "Propano (C₃)": 0.129,
-           "i-Butano (iC₄)": 0.003,
-           "n-Butano (nC₄)": 0.012,
-           "Isopentano": 0.005,
-           "N-Pentano": 0.009,
-           "Hexano": 0.037,
-           "Heptano": 0.080,
-           "Octano": 0.042,
-           "Nonano": 0.005,
-           "Decano": 0.000,
-           "Oxigênio": 0.012,
-           "Nitrogênio (N₂)": 0.345,
-           "Dióxido de Carbono (CO₂)": 0.834
-         },
-         properties: {
-           compressibilityFactor: 0.9980,
-           specificMass: 0.688,
-           molarMass: 16.5224
-         }
-       },
-       {
-         boletimNumber: "PTI24-13669",
-         date: "2024-06-18",
-         components: {
-           "Metano (C₁)": 98.076,
-           "Etano (C₂)": 0.087,
-           "Propano (C₃)": 0.338,
-           "i-Butano (iC₄)": 0.004,
-           "n-Butano (nC₄)": 0.014,
-           "Isopentano": 0.010,
-           "N-Pentano": 0.019,
-           "Hexano": 0.077,
-           "Heptano": 0.083,
-           "Octano": 0.033,
-           "Nonano": 0.003,
-           "Decano": 0.000,
-           "Oxigênio": 0.013,
-           "Nitrogênio (N₂)": 0.520,
-           "Dióxido de Carbono (CO₂)": 0.875
-         },
-         properties: {
-           compressibilityFactor: 0.9979,
-           specificMass: 0.693,
-           molarMass: 16.6279
-         }
-       },
-       {
-         boletimNumber: "PTI24-14803",
-         date: "2024-08-19",
-         components: {
-           "Metano (C₁)": 97.550,
-           "Etano (C₂)": 0.097,
-           "Propano (C₃)": 0.636,
-           "i-Butano (iC₄)": 0.014,
-           "n-Butano (nC₄)": 0.033,
-           "Isopentano": 0.026,
-           "N-Pentano": 0.051,
-           "Hexano": 0.176,
-           "Heptano": 0.147,
-           "Octano": 0.032,
-           "Nonano": 0.001,
-           "Decano": 0.000,
-           "Oxigênio": 0.017,
-           "Nitrogênio (N₂)": 0.424,
-           "Dióxido de Carbono (CO₂)": 0.795
-         },
-         properties: {
-           compressibilityFactor: 0.9979,
-           specificMass: 0.702,
-           molarMass: 16.8535
-         }
-       }
-    ];
-
-    try {
-      // Carregar dados existentes
-      const existingData = localStorage.getItem('cep_historical_samples');
-      const existing = existingData ? JSON.parse(existingData) : [];
-      
-      // Filtrar amostras que já existem (por boletimNumber)
-      const existingNumbers = existing.map((s: any) => s.boletimNumber);
-      const newSamples = historicalSamples.filter(sample => 
-        !existingNumbers.includes(sample.boletimNumber)
-      );
-      
-      if (newSamples.length === 0) {
-        addNotification('info', 'Dados Históricos', 'Todas as amostras da tabela já estão no histórico CEP.');
-        return;
-      }
-      
-      // Adicionar as novas amostras
-      const updatedData = [...newSamples, ...existing];
-      localStorage.setItem('cep_historical_samples', JSON.stringify(updatedData));
-      
-      addNotification('success', 'Dados Históricos Importados', 
-        `${newSamples.length} amostras da tabela foram adicionadas ao histórico CEP (39 amostras completas: 2019-2024).`);
-      
-      // Forçar revalidação CEP com novos dados
-      setTimeout(() => {
-        runCEPValidation();
-      }, 500);
-      
-    } catch (error) {
-      console.error('Erro ao importar dados históricos:', error);
-      addNotification('error', 'Erro na Importação', 'Erro ao importar dados históricos da tabela.');
-    }
-  }, [addNotification, runCEPValidation]);
-
-  // Função para carregar dados de exemplo da tabela histórica
-  const loadSampleDataFromTable = useCallback(() => {
-    // Usar dados da última amostra da tabela completa (PTI24-14803)
-    const sampleData = {
-      numeroBoletim: "PTI24-14803",
-      dataRealizacaoAnaliseCritica: "2024-08-19",
-      
-      solicitantInfo: {
-        nomeClienteSolicitante: "Exemplo - Cliente da Tabela Histórica",
-        enderecoLocalizacaoClienteSolicitante: "",
-        contatoResponsavelSolicitacao: "",
-      },
-      
-      sampleInfo: {
-        numeroAmostra: "PTI24-14803-SAMPLE",
-        dataHoraColeta: "2024-08-19T10:00",
-        localColeta: "Ponto de Medição - Exemplo",
-        pontoColetaTAG: "TAG-PTI24-14803",
-        pocoApropriacao: "",
-        numeroCilindroAmostra: "",
-        responsavelAmostragem: "",
-        pressaoAmostraAbsolutaKpaA: "2500",
-        pressaoAmostraManometricaKpa: "2399",
-        temperaturaAmostraK: "293.15",
-        temperaturaAmostraC: "20.00",
-      },
-      
-      bulletinInfo: {
-        dataRecebimentoAmostra: "2024-08-20",
-        dataAnaliseLaboratorial: "2024-08-21", 
-        dataEmissaoBoletim: "2024-08-22",
-        dataRecebimentoBoletimSolicitante: "2024-08-23",
-        laboratorioEmissor: "Laboratório Exemplo - Análise Cromatográfica",
-        equipamentoCromatografoUtilizado: "CG-MS Modelo ABC",
-        metodoNormativo: "ASTM D1945",
-        tipoProcesso: ProcessType.ProcessoNormal,
-      },
-      
-      // Componentes da última amostra da tabela completa (PTI24-14803)
-      components: reportData.components.map(comp => {
-        const sampleValues: Record<string, string> = {
-          "Metano (C₁)": "97.550",
-          "Etano (C₂)": "0.097", 
-          "Propano (C₃)": "0.636",
-          "i-Butano (iC₄)": "0.014",
-          "n-Butano (nC₄)": "0.033",
-          "Isopentano": "0.026",
-          "N-Pentano": "0.051",
-          "Hexano": "0.176",
-          "Heptano": "0.147",
-          "Octano": "0.032",
-          "Nonano": "0.001",
-          "Decano": "0.000",
-          "Oxigênio": "0.017",
-          "Nitrogênio (N₂)": "0.424",
-          "Dióxido de Carbono (CO₂)": "0.795"
-        };
-        
-        return {
-          ...comp,
-          molarPercent: sampleValues[comp.name] || "0.000",
-          incertezaAssociadaPercent: "0.01" // 1% de incerteza padrão
-        };
-      }),
-      
-      // Propriedades calculadas da amostra (PTI24-14803)
-      standardProperties: reportData.standardProperties.map(prop => {
-        const sampleValues: Record<string, string> = {
-          "compressibilityFactor": "0.9979",
-          "specificMass": "0.702", 
-          "molarMass": "16.8535",
-          "pcs": "39500", // Estimado
-          "pci": "35550", // Estimado (90% do PCS)
-          "relativeDensity": "0.582", // Calculado
-          "realDensity": "0.726" // Calculado
-        };
-        
-        return {
-          ...prop,
-          value: sampleValues[prop.id] || "",
-          incertezaExpandida: "0.5" // 0.5% de incerteza expandida padrão
-        };
-      })
-    };
-    
-    setReportData(prev => ({
+  // Handler para controlar expansão/contração das seções
+  const toggleSection = useCallback((parte: 'parte1' | 'parte2' | 'parte3', item: string) => {
+    setExpandedSections(prev => ({
       ...prev,
-      ...sampleData
+      [parte]: {
+        ...prev[parte],
+        [item]: !prev[parte][item as keyof typeof prev[typeof parte]]
+      }
     }));
-    
-    addNotification('success', 'Dados Carregados', 
-      'Dados da amostra PTI24-14803 carregados da tabela histórica completa (última amostra de 2024).');
-      
-  }, [reportData.components, reportData.standardProperties, addNotification]);
-
-  // Função para debug dos cálculos CEP - comparar com dados da imagem
-  const debugCEPCalculations = useCallback(() => {
-    const historicalData = localStorage.getItem('cep_historical_samples');
-    const samples = historicalData ? JSON.parse(historicalData) : [];
-    
-    console.log('=== DEBUG CEP CALCULATIONS ===');
-    console.log('Histórico atual:', samples.length, 'amostras');
-    
-    if (samples.length === 0) {
-      addNotification('warning', 'Debug CEP', 'Nenhum histórico disponível. Use "Importar Histórico" primeiro.');
-      return;
-    }
-    
-    // Analisar Metano (C₁) como exemplo
-    const metanoValues = samples
-      .map((s: any) => s.components["Metano (C₁)"])
-      .filter((v: any) => v !== undefined && v > 0)
-      .slice(0, 8); // Últimas 8
-    
-    console.log('Valores Metano (C₁):', metanoValues);
-    
-    if (metanoValues.length >= 2) {
-      const mean = metanoValues.reduce((sum: number, val: number) => sum + val, 0) / metanoValues.length;
-      
-      // Calcular amplitudes móveis
-      const mobileRanges = [];
-      for (let i = 1; i < metanoValues.length; i++) {
-        mobileRanges.push(Math.abs(metanoValues[i] - metanoValues[i - 1]));
-      }
-      
-      const mobileRangeMean = mobileRanges.reduce((sum, range) => sum + range, 0) / mobileRanges.length;
-      
-      // Fator de controle com D2 = 1.128
-      const controlFactor = 3 * (mobileRangeMean / 1.128);
-      const upperLimit = mean + controlFactor;
-      const lowerLimit = Math.max(0, mean - controlFactor);
-      
-      console.log('=== CÁLCULOS METANO (C₁) ===');
-      console.log('Média (x̄):', mean.toFixed(6));
-      console.log('Amplitudes móveis:', mobileRanges.map(r => r.toFixed(6)));
-      console.log('Média das amplitudes (MR̄):', mobileRangeMean.toFixed(6));
-      console.log('Fator de controle (3×MR̄/D2):', controlFactor.toFixed(6));
-      console.log('Limite Superior (LCS):', upperLimit.toFixed(6));
-      console.log('Limite Inferior (LCI):', lowerLimit.toFixed(6));
-      
-      addNotification('success', 'Debug CEP Completo', 
-        `Cálculos detalhados no console. Média Metano: ${mean.toFixed(4)}%, LCI: ${lowerLimit.toFixed(4)}%, LCS: ${upperLimit.toFixed(4)}%`);
-    }
-     }, [addNotification]);
-
-  // ============================================================================
-  // TEMPLATE EXCEL PARA IMPORTAÇÃO DE DADOS HISTÓRICOS
-  // ============================================================================
-  
-  const generateExcelTemplate = useCallback(async () => {
-    try {
-      // Importar biblioteca Excel dinamicamente
-      const ExcelJS = await import('exceljs');
-      
-      // Criar workbook e worksheet
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Dados Históricos CEP');
-      
-      // Cabeçalhos do template
-      const headers = [
-        'DATA_COLETA', 'DATA_EMISSAO_RELATORIO', 'DATA_VALIDACAO', 'BOLETIM',
-        'Metano (%)', 'Etano (%)', 'Propano (%)', 'Isobutano (%)', 'n-butano (%)', 'Isopentano (%)', 
-        'N-Pentano (%)', 'Hexano (%)', 'Heptano (%)', 'Octano (%)', 'Nonano (%)', 'Decano (%)',
-        'Oxigenio (%)', 'Nitrogenio (%)', 'Dioxido_Carbono (%)', 'TOTAL (%)',
-        'Fator_Compressibilidade', 'Massa_Especifica (kg/m³)', 'Massa_Molecular (g/mol)'
-      ];
-      
-      // Adicionar cabeçalhos
-      worksheet.addRow(headers);
-      
-      // Dados de exemplo
-      const exampleRows = [
-        ['20/03/2019', '27/03/2019', '27/03/2019', '328.19REV.00',
-         99.063, 0.098, 0.006, 0.003, 0.003, 0.000,
-         0.001, 0.001, 0.000, 0.000, 0.000, 0.000,
-         0.000, 0.230, 0.594, 100,
-         0.9981, 0.677, 16.3000],
-        ['13/04/2019', '17/04/2019', '17/04/2019', '414.19REV.00',
-         99.046, 0.086, 0.009, 0.002, 0.003, 0.000,
-         0.001, 0.001, 0.000, 0.000, 0.000, 0.000,
-         0.000, 0.241, 0.611, 100,
-         0.9981, 0.677, 16.3000]
-      ];
-      
-      // Adicionar exemplos
-      exampleRows.forEach(row => worksheet.addRow(row));
-      
-      // Estilizar cabeçalho
-      worksheet.getRow(1).font = { bold: true };
-      worksheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF4472C4' }
-      };
-      
-      // Ajustar larguras das colunas
-      headers.forEach((_, index) => {
-        const width = index < 4 ? 15 : index < 19 ? 12 : 18;
-        worksheet.getColumn(index + 1).width = width;
-      });
-      
-      // Criar aba de instruções
-      const instructionsWs = workbook.addWorksheet('Instruções');
-      instructionsWs.addRow(['INSTRUÇÕES PARA PREENCHIMENTO DO TEMPLATE']);
-      instructionsWs.addRow(['']);
-      instructionsWs.addRow(['1. FORMATO DAS DATAS:', 'Use formato DD/MM/AAAA']);
-      instructionsWs.addRow(['2. BOLETIM:', 'Número único do boletim']);
-      instructionsWs.addRow(['3. COMPONENTES:', 'Valores em percentual molar']);
-      instructionsWs.addRow(['4. Use ponto (.) como separador decimal']);
-      
-      // Gerar arquivo
-      const fileName = `template_historico_cep_${new Date().toISOString().split('T')[0]}.xlsx`;
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      link.click();
-      
-      addNotification('success', 'Template Excel Gerado', 
-        'Template Excel baixado com instruções completas. Preencha com seus dados históricos.');
-        
-    } catch (error) {
-      console.error('Erro ao gerar template Excel:', error);
-      
-      // Fallback para CSV caso a biblioteca não funcione
-      const headers = [
-        'DATA_COLETA', 'DATA_EMISSAO_RELATORIO', 'DATA_VALIDACAO', 'BOLETIM',
-        'Metano', 'Etano', 'Propano', 'Isobutano', 'n-butano', 'Isopentano', 
-        'N-Pentano', 'Hexano', 'Heptano', 'Octano', 'Nonano', 'Decano',
-        'Oxigenio', 'Nitrogenio', 'Dioxido_Carbono', 'TOTAL',
-        'Fator_Compressibilidade', 'Massa_Especifica', 'Massa_Molecular'
-      ];
-      
-      const exampleRows = [
-        '20/03/2019,27/03/2019,27/03/2019,328.19REV.00,99.063,0.098,0.006,0.003,0.003,0.000,0.001,0.001,0.000,0.000,0.000,0.000,0.000,0.230,0.594,100,0.9981,0.677,16.3000',
-        '13/04/2019,17/04/2019,17/04/2019,414.19REV.00,99.046,0.086,0.009,0.002,0.003,0.000,0.001,0.001,0.000,0.000,0.000,0.000,0.000,0.241,0.611,100,0.9981,0.677,16.3000',
-        ',,,,,,,,,,,,,,,,,,,,,,'
-      ];
-      
-      const csvContent = [headers.join(','), ...exampleRows].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `template_historico_cep_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      addNotification('success', 'Template CSV Gerado', 
-        'Template CSV baixado. Use Excel para abrir e preencher os dados.');
-    }
-  }, [addNotification]);
-
-  // Função para processar arquivo importado (CSV ou Excel)
-  const handleFileImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    try {
-      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        // Processar arquivo Excel
-        const ExcelJS = await import('exceljs');
-        const reader = new FileReader();
-        
-                 return new Promise<void>((resolve, reject) => {
-           reader.onload = async (e) => {
-             try {
-               const buffer = e.target?.result as ArrayBuffer;
-               const workbook = new ExcelJS.Workbook();
-               await workbook.xlsx.load(buffer);
-               const worksheet = workbook.getWorksheet(1);
-               const jsonData: any[][] = [];
-               
-               worksheet?.eachRow((row) => {
-                 jsonData.push(row.values as any[]);
-               });
-               
-               processImportedData(jsonData);
-               resolve();
-             } catch (error) {
-               reject(error);
-             }
-           };
-           reader.readAsArrayBuffer(file);
-         });
-      } else {
-        // Processar arquivo CSV
-        const reader = new FileReader();
-        return new Promise<void>((resolve, reject) => {
-          reader.onload = (e) => {
-            try {
-              const text = e.target?.result as string;
-              const lines = text.split('\n');
-              const csvData = lines.map(line => line.split(',').map(cell => cell.trim()));
-              
-              processImportedData(csvData);
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          };
-          reader.readAsText(file);
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao processar arquivo:', error);
-      addNotification('error', 'Erro na Importação', 
-        'Erro ao processar o arquivo. Verifique se é um arquivo Excel (.xlsx) ou CSV válido.');
-    } finally {
-      // Limpar input
-      event.target.value = '';
-    }
-    
-    // Função interna para processar dados
-    function processImportedData(csvData: any[][]) {
-      const importedSamples = [];
-      
-      for (let i = 1; i < csvData.length; i++) {
-        const values = csvData[i].map((v: any) => String(v || '').trim());
-        
-        if (values.length < 4 || !values[3]) continue; // Pular linhas vazias ou sem boletim
-        
-        const sample = {
-          id: `${values[3]}_${Date.now()}_${i}`,
-          boletimNumber: values[3],
-          date: parseImportDate(values[0]) || new Date().toISOString(),
-          components: {
-            "Metano (C₁)": parseFloat(values[4]) || 0,
-            "Etano (C₂)": parseFloat(values[5]) || 0,
-            "Propano (C₃)": parseFloat(values[6]) || 0,
-            "i-Butano (iC₄)": parseFloat(values[7]) || 0,
-            "n-Butano (nC₄)": parseFloat(values[8]) || 0,
-            "Isopentano": parseFloat(values[9]) || 0,
-            "N-Pentano": parseFloat(values[10]) || 0,
-            "Hexano": parseFloat(values[11]) || 0,
-            "Heptano": parseFloat(values[12]) || 0,
-            "Octano": parseFloat(values[13]) || 0,
-            "Nonano": parseFloat(values[14]) || 0,
-            "Decano": parseFloat(values[15]) || 0,
-            "Oxigênio": parseFloat(values[16]) || 0,
-            "Nitrogênio (N₂)": parseFloat(values[17]) || 0,
-            "Dióxido de Carbono (CO₂)": parseFloat(values[18]) || 0
-          },
-          properties: {
-            compressibilityFactor: parseFloat(values[20]) || 0,
-            specificMass: parseFloat(values[21]) || 0,
-            molarMass: parseFloat(values[22]) || 0
-          }
-        };
-        
-        // Validar dados mínimos
-        const totalComponents = Object.values(sample.components).reduce((sum, val) => sum + val, 0);
-        if (totalComponents > 0 && sample.properties.compressibilityFactor > 0) {
-          importedSamples.push(sample);
-        }
-      }
-      
-      if (importedSamples.length > 0) {
-        // Carregar dados existentes
-        const existingData = localStorage.getItem('cep_historical_samples');
-        const existing = existingData ? JSON.parse(existingData) : [];
-        
-        // Filtrar duplicatas por boletimNumber
-        const existingNumbers = existing.map((s: any) => s.boletimNumber);
-        const newSamples = importedSamples.filter(sample => 
-          !existingNumbers.includes(sample.boletimNumber)
-        );
-        
-        // Adicionar as novas amostras
-        const updatedData = [...newSamples, ...existing];
-        localStorage.setItem('cep_historical_samples', JSON.stringify(updatedData));
-        
-        addNotification('success', 'Importação Concluída', 
-          `${newSamples.length} amostras importadas com sucesso. Total no histórico: ${updatedData.length}`);
-        
-        // Forçar revalidação CEP
-        setTimeout(() => {
-          runCEPValidation();
-        }, 500);
-        
-      } else {
-        addNotification('warning', 'Nenhum Dado Válido', 
-          'Não foram encontrados dados válidos no arquivo. Verifique o formato e se as colunas estão preenchidas.');
-      }
-    }
-  }, [addNotification, runCEPValidation]);
-
-  // Função auxiliar para converter data
-  const parseImportDate = (dateStr: string): string | null => {
-    if (!dateStr) return null;
-    
-    try {
-      // Tentar formatos dd/mm/yyyy, yyyy-mm-dd, etc.
-      const formats = [
-        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // dd/mm/yyyy
-        /^(\d{4})-(\d{1,2})-(\d{1,2})$/, // yyyy-mm-dd
-      ];
-      
-      for (const format of formats) {
-        const match = dateStr.match(format);
-        if (match) {
-          if (format === formats[0]) {
-            // dd/mm/yyyy
-            const [, day, month, year] = match;
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
-          } else {
-            // yyyy-mm-dd
-            const [, year, month, day] = match;
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
-          }
-        }
-      }
-      
-      // Fallback: tentar parsing direto
-      return new Date(dateStr).toISOString();
-    } catch {
-      return null;
-    }
-  };
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -2814,22 +1325,308 @@ const App: React.FC = () => {
         {/* ====================================================================== */}
         
         <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-6 bg-blue-900 rounded-t-lg">
-            <h2 className="text-xl font-bold text-center text-white">
+          <div className="p-4 bg-blue-800 rounded-t-lg">
+            <h2 className="text-lg font-bold text-white">
               PARTE 1 - VERIFICAÇÃO DOCUMENTAL DO BOLETIM (ISO/IEC 17025)
             </h2>
           </div>
+        </div>
+
+        {/* ====================================================================== */}
+        {/* 1. LISTA DE VERIFICAÇÃO NBR ISO/IEC 17025 */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-blue-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">1. LISTA DE VERIFICAÇÃO NBR ISO/IEC 17025</h3>
+          </div>
           
-          {/* 1. Lista de Verificação NBR ISO/IEC 17025 */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-              <h3 className="text-lg font-bold text-white">1. LISTA DE VERIFICAÇÃO NBR ISO/IEC 17025</h3>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+                <thead className="bg-blue-600">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                      ITEM
+                    </th>
+                    <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                      DESCRIÇÃO
+                    </th>
+                    <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                      SIM
+                    </th>
+                    <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                      NÃO
+                    </th>
+                    <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                      NÃO APLICÁVEL
+                    </th>
+                    <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                      OBSERVAÇÃO
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {checklistItems.map((item, index) => (
+                    <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-4 py-3 text-sm font-medium text-center text-gray-900 border border-gray-300">
+                        {item.id}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 border border-gray-300">
+                        {item.description}
+                      </td>
+                      <td className="px-4 py-3 text-center border border-gray-300">
+                        <input
+                          type="radio"
+                          name={`checklist-${item.id}`}
+                          checked={item.status === 'SIM'}
+                          onChange={() => handleChecklistChange(item.id, 'status', 'SIM')}
+                          className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-center border border-gray-300">
+                        <input
+                          type="radio"
+                          name={`checklist-${item.id}`}
+                          checked={item.status === 'NÃO'}
+                          onChange={() => handleChecklistChange(item.id, 'status', 'NÃO')}
+                          className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 focus:ring-red-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-center border border-gray-300">
+                        <input
+                          type="radio"
+                          name={`checklist-${item.id}`}
+                          checked={item.status === 'NÃO APLICÁVEL'}
+                          onChange={() => handleChecklistChange(item.id, 'status', 'NÃO APLICÁVEL')}
+                          className="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 border border-gray-300">
+                        <input
+                          type="text"
+                          value={item.observation}
+                          onChange={(e) => handleChecklistChange(item.id, 'observation', e.target.value)}
+                          className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Observações"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </div>
+        </div>
+
+        {/* ====================================================================== */}
+        {/* 2. INFORMAÇÕES DO SOLICITANTE */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-blue-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">2. INFORMAÇÕES DO SOLICITANTE</h3>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Nome do Cliente/Solicitante
+                </label>
+                <input
+                  type="text"
+                  value={reportData.solicitantInfo?.nomeClienteSolicitante || ''}
+                  onChange={(e) => handleNestedInputChange('solicitantInfo', 'nomeClienteSolicitante', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Contato/Responsável
+                </label>
+                <input
+                  type="text"
+                  value={reportData.solicitantInfo?.contatoResponsavelSolicitacao || ''}
+                  onChange={(e) => handleNestedInputChange('solicitantInfo', 'contatoResponsavelSolicitacao', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ====================================================================== */}
+        {/* 3. INFORMAÇÕES DA AMOSTRA */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-blue-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">3. INFORMAÇÕES DA AMOSTRA</h3>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Nº da Amostra
+                </label>
+                <input
+                  type="text"
+                  value={reportData.sampleInfo?.numeroAmostra || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'numeroAmostra', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data e Hora da Coleta
+                </label>
+                <input
+                  type="datetime-local"
+                  value={reportData.sampleInfo?.dataHoraColeta || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'dataHoraColeta', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Local da Coleta
+                </label>
+                <input
+                  type="text"
+                  value={reportData.sampleInfo?.localColeta || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'localColeta', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Ponto de Coleta (TAG)
+                </label>
+                <input
+                  type="text"
+                  value={reportData.sampleInfo?.pontoColetaTAG || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'pontoColetaTAG', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Responsável pela Coleta
+                </label>
+                <input
+                  type="text"
+                  value={reportData.sampleInfo?.responsavelColeta || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'responsavelColeta', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Temperatura da Amostra (°C)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={reportData.sampleInfo?.temperaturaAmostraC || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'temperaturaAmostraC', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Pressão Absoluta (kPa)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={reportData.sampleInfo?.pressaoAmostraAbsolutaKpaA || ''}
+                  onChange={(e) => handleNestedInputChange('sampleInfo', 'pressaoAmostraAbsolutaKpaA', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ====================================================================== */}
+        {/* 4. DADOS DO BOLETIM */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-blue-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">4. DADOS DO BOLETIM</h3>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data Análise Laboratorial
+                </label>
+                <input
+                  type="date"
+                  value={reportData.bulletinInfo?.dataAnaliseLabEmissora || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataAnaliseLabEmissora', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Laboratório Emissor
+                </label>
+                <input
+                  type="text"
+                  value={reportData.bulletinInfo?.laboratorioEmissor || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'laboratorioEmissor', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data Emissão Boletim
+                </label>
+                <input
+                  type="date"
+                  value={reportData.bulletinInfo?.dataEmissaoBoletim || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataEmissaoBoletim', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data Implementação
+                </label>
+                <input
+                  type="date"
+                  value={reportData.bulletinInfo?.dataImplementacao || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataImplementacao', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Fim da refatoração - removendo o resto das divs antigas */}
+          
+          {/* 2. Informações do Solicitante */}
+          <div className="border-b border-gray-200">
+            <button
+              onClick={() => toggleSection('parte1', 'item2')}
+              className="flex justify-between items-center p-4 w-full text-left transition-colors hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+            >
+              <h3 className="font-semibold text-blue-800 text-md">2. INFORMAÇÕES DO SOLICITANTE</h3>
+              <span className="text-lg text-blue-800">
+                {expandedSections.parte1.item2 ? '▼' : '▶'}
+              </span>
+            </button>
             
             {expandedSections.parte1.item1 && (
               <div className="p-6 pt-0">
                 <div className="overflow-x-auto">
-                  <table className="overflow-hidden min-w-full rounded-lg border border-gray-300 divide-y divide-gray-200">
+                  <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
                     <thead className="bg-blue-600">
                       <tr>
                         <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
@@ -2907,10 +1704,16 @@ const App: React.FC = () => {
           </div>
 
           {/* 2. Informações do Solicitante */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-              <h3 className="text-lg font-bold text-white">2. INFORMAÇÕES DO SOLICITANTE</h3>
-            </div>
+          <div className="border-b border-gray-200">
+            <button
+              onClick={() => toggleSection('parte1', 'item2')}
+              className="flex justify-between items-center p-4 w-full text-left transition-colors hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+            >
+              <h3 className="font-semibold text-blue-800 text-md">2. INFORMAÇÕES DO SOLICITANTE</h3>
+              <span className="text-lg text-blue-800">
+                {expandedSections.parte1.item2 ? '▼' : '▶'}
+              </span>
+            </button>
             
             {expandedSections.parte1.item2 && (
               <div className="p-6 pt-0">
@@ -2943,10 +1746,16 @@ const App: React.FC = () => {
           </div>
 
           {/* 3. Informações da Amostra */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-              <h3 className="text-lg font-bold text-white">3. INFORMAÇÕES DA AMOSTRA</h3>
-            </div>
+          <div className="border-b border-gray-200">
+            <button
+              onClick={() => toggleSection('parte1', 'item3')}
+              className="flex justify-between items-center p-4 w-full text-left transition-colors hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+            >
+              <h3 className="font-semibold text-blue-800 text-md">3. INFORMAÇÕES DA AMOSTRA</h3>
+              <span className="text-lg text-blue-800">
+                {expandedSections.parte1.item3 ? '▼' : '▶'}
+              </span>
+            </button>
             
             {expandedSections.parte1.item3 && (
               <div className="p-6 pt-0">
@@ -3061,181 +1870,176 @@ const App: React.FC = () => {
           </div>
 
           {/* 4. Dados do Boletim */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-              <h3 className="text-lg font-bold text-white">4. DADOS DO BOLETIM</h3>
+          <div className="p-6">
+            <h3 className="mb-4 font-semibold text-blue-800 text-md">4. DADOS DO BOLETIM</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data Análise Laboratorial
+                </label>
+                <input
+                  type="date"
+                  value={reportData.bulletinInfo?.dataAnaliseLaboratorial || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataAnaliseLaboratorial', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data Emissão Boletim
+                </label>
+                <input
+                  type="date"
+                  value={reportData.bulletinInfo?.dataEmissaoBoletim || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataEmissaoBoletim', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Laboratório Emissor
+                </label>
+                <input
+                  type="text"
+                  value={reportData.bulletinInfo?.laboratorioEmissor || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'laboratorioEmissor', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Data Implementação
+                </label>
+                <input
+                  type="date"
+                  value={reportData.bulletinInfo?.dataRecebimentoBoletimSolicitante || ''}
+                  onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataRecebimentoBoletimSolicitante', e.target.value)}
+                  className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-            {expandedSections.parte1.item4 && (
-              <div className="p-6 pt-0">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Data Análise Laboratorial
-                    </label>
-                    <input
-                      type="date"
-                      value={reportData.bulletinInfo?.dataAnaliseLaboratorial || ''}
-                      onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataAnaliseLaboratorial', e.target.value)}
-                      className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    />
-            </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Data Emissão Boletim
-                    </label>
-                    <input
-                      type="date"
-                      value={reportData.bulletinInfo?.dataEmissaoBoletim || ''}
-                      onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataEmissaoBoletim', e.target.value)}
-                      className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Laboratório Emissor
-                    </label>
-                    <input
-                      type="text"
-                      value={reportData.bulletinInfo?.laboratorioEmissor || ''}
-                      onChange={(e) => handleNestedInputChange('bulletinInfo', 'laboratorioEmissor', e.target.value)}
-                      className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Data Implementação
-                    </label>
-                    <input
-                      type="date"
-                      value={reportData.bulletinInfo?.dataRecebimentoBoletimSolicitante || ''}
-                      onChange={(e) => handleNestedInputChange('bulletinInfo', 'dataRecebimentoBoletimSolicitante', e.target.value)}
-                      className="p-2 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+        {/* ====================================================================== */}
+        {/* 5. COMPOSIÇÃO MOLAR E INCERTEZAS */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-blue-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">5. COMPOSIÇÃO MOLAR E INCERTEZAS</h3>
+        </div>
 
-          {/* 5. Composição Molar e Incertezas */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-              <h3 className="text-lg font-bold text-white">5. COMPOSIÇÃO MOLAR E INCERTEZAS</h3>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Componente</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">% Molar</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Incerteza %</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status AGA-8</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status CEP</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {reportData.components.map((component, index) => (
+                    <tr key={component.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {component.name}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={component.molarPercent}
+                          onChange={(e) => handleComponentChange(component.id, 'molarPercent', e.target.value)}
+                          onBlur={() => handleComponentBlur(component.id, 'molarPercent', component.name)}
+                          className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={component.incertezaAssociadaPercent}
+                          onChange={(e) => handleComponentChange(component.id, 'incertezaAssociadaPercent', e.target.value)}
+                          className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <StatusBadge status={component.aga8Status} />
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <StatusBadge status={component.cepStatus} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
             
-            {expandedSections.parte1.item5 && (
-              <div className="p-6 pt-0">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Componente</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">% Molar</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Incerteza %</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status AGA-8</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status CEP</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {reportData.components.map((component, index) => (
-                        <tr key={component.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                            {component.name}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            <input
-                              type="number"
-                              step="0.0001"
-                              value={component.molarPercent}
-                              onChange={(e) => handleComponentChange(component.id, 'molarPercent', e.target.value)}
-                              onBlur={() => handleComponentBlur(component.id, 'molarPercent', component.name)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            <input
-                              type="number"
-                              step="0.0001"
-                              value={component.incertezaAssociadaPercent}
-                              onChange={(e) => handleComponentChange(component.id, 'incertezaAssociadaPercent', e.target.value)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            <StatusBadge status={component.aga8Status} />
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            <StatusBadge status={component.cepStatus} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                {/* Validação da composição molar */}
-                <div className={`mt-4 p-3 rounded-lg ${molarValidation.isValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                  <p className={`text-sm font-medium ${molarValidation.isValid ? 'text-green-800' : 'text-red-800'}`}>
-                    Total: {molarValidation.total.toFixed(4)}% mol - {molarValidation.message}
+            {/* Validação da composição molar */}
+            <div className="mt-4 p-3 rounded-lg ${molarValidation.isValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+              <p className="text-sm font-medium ${molarValidation.isValid ? 'text-green-800' : 'text-red-800'}">
+                Total: {molarValidation.total.toFixed(4)}% mol - {molarValidation.message}
               </p>
             </div>
           </div>
-            )}
         </div>
 
-          {/* 6. Propriedades do Gás - Condições Padrão */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-              <h3 className="text-lg font-bold text-white">6. PROPRIEDADES DO GÁS - CONDIÇÕES PADRÃO</h3>
+        {/* ====================================================================== */}
+        {/* 6. PROPRIEDADES DO GÁS - CONDIÇÕES PADRÃO */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-blue-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">6. PROPRIEDADES DO GÁS - CONDIÇÕES PADRÃO</h3>
+          </div>
+          
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Propriedade</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Valor</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Incerteza Expandida</th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status CEP</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {reportData.standardProperties.map((property, index) => (
+                    <tr key={property.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {property.name}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={property.value}
+                          onChange={(e) => handleStandardPropertyChange(property.id, 'value', e.target.value)}
+                          className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={property.incertezaExpandida}
+                          onChange={(e) => handleStandardPropertyChange(property.id, 'incertezaExpandida', e.target.value)}
+                          className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <StatusBadge status={property.cepStatus || ValidationStatus.Pendente} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            
-            {expandedSections.parte1.item6 && (
-              <div className="p-6 pt-0">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Propriedade</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Valor</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Incerteza Expandida</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status CEP</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {reportData.standardProperties.map((property, index) => (
-                        <tr key={property.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                            {property.name}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            <input
-                              type="number"
-                              step="0.0001"
-                              value={property.value}
-                              onChange={(e) => handleStandardPropertyChange(property.id, 'value', e.target.value)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            <input
-                              type="number"
-                              step="0.0001"
-                              value={property.incertezaExpandida}
-                              onChange={(e) => handleStandardPropertyChange(property.id, 'incertezaExpandida', e.target.value)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            <StatusBadge status={property.cepStatus || ValidationStatus.Pendente} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -3243,7 +2047,7 @@ const App: React.FC = () => {
         {/* OBSERVAÇÕES */}
         {/* ====================================================================== */}
         
-        <div className="mt-8 mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="p-4 bg-gray-600 rounded-t-lg">
             <h3 className="text-lg font-bold text-white">OBSERVAÇÕES</h3>
           </div>
@@ -3263,18 +2067,24 @@ const App: React.FC = () => {
         {/* PARTE 2 - VALIDAÇÃO TÉCNICA E METROLÓGICA */}
         {/* ====================================================================== */}
         
-        <div className="mt-8 mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-6 bg-blue-900 rounded-t-lg">
-            <h2 className="text-xl font-bold text-center text-white">
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-teal-700 rounded-t-lg">
+            <h2 className="text-lg font-bold text-white">
               PARTE 2 - VALIDAÇÃO TÉCNICA E METROLÓGICA DOS RESULTADOS
             </h2>
           </div>
           
-          {/* 5. Resultados da Validação - Componentes */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-                             <h3 className="text-lg font-bold text-white">6. RESULTADOS DA VALIDAÇÃO - COMPONENTES</h3>
-            </div>
+          {/* 5. Tabela de Componentes Validados */}
+          <div className="border-b border-gray-200">
+            <button 
+              onClick={() => toggleSection('parte2', 'item5')}
+              className="flex justify-between items-center p-4 w-full text-left transition-colors hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+            >
+              <h3 className="font-semibold text-blue-800 text-md">5. RESULTADOS DA VALIDAÇÃO - COMPONENTES</h3>
+              <span className="text-lg text-blue-800">
+                {expandedSections.parte2.item5 ? '▼' : '▶'}
+              </span>
+            </button>
             
             {expandedSections.parte2.item5 && (
               <div className="p-6 pt-0">
@@ -3336,7 +2146,7 @@ const App: React.FC = () => {
                                 'bg-yellow-100 text-yellow-800'
                               }`}>
                                 {isValidated ? (component.cepStatus === ValidationStatus.OK ? 'VALIDADO' : 
-                                               component.cepStatus === ValidationStatus.ForaDaFaixa ? 'INVÁLIDO' : 'PENDENTE') : '***'}
+                                               component.cepStatus === ValidationStatus.ForaDaFaixa ? 'INVÁLIDO' : 'INVÁLIDO') : 'INVÁLIDO'}
                               </span>
                             </td>
                             <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
@@ -3376,11 +2186,17 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* 6. Resultados da Validação - Propriedades */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
-                             <h3 className="text-lg font-bold text-white">7. RESULTADOS DA VALIDAÇÃO - PROPRIEDADES</h3>
-            </div>
+          {/* 6. Tabela de Propriedades Validadas */}
+          <div className="border-b border-gray-200">
+            <button 
+              onClick={() => toggleSection('parte2', 'item6')}
+              className="flex justify-between items-center p-4 w-full text-left transition-colors hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+            >
+              <h3 className="font-semibold text-blue-800 text-md">6. RESULTADOS DA VALIDAÇÃO - PROPRIEDADES</h3>
+              <span className="text-lg text-blue-800">
+                {expandedSections.parte2.item6 ? '▼' : '▶'}
+              </span>
+            </button>
             
             {expandedSections.parte2.item6 && (
               <div className="p-6 pt-0">
@@ -3410,7 +2226,7 @@ const App: React.FC = () => {
                       {reportData.standardProperties.map((property, index) => {
                         const propertyValue = parseFloat(property.value) || 0;
                         const isValidated = property.value && propertyValue > 0;
-                        const cepResult = cepPropertyResults.find(r => r.componentName === property.name);
+                                                 const cepResult = cepPropertyResults.find(r => r.componentName === property.name);
                         
                         return (
                           <tr key={property.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
@@ -3431,17 +2247,17 @@ const App: React.FC = () => {
                                 property.cepStatus === ValidationStatus.ForaDaFaixa ? 'bg-red-100 text-red-800' :
                                 'bg-yellow-100 text-yellow-800'
                               }`}>
-                                {isValidated ? (property.cepStatus === ValidationStatus.OK ? 'VALIDADO' : 'PENDENTE') : '***'}
+                                {isValidated ? (property.cepStatus === ValidationStatus.OK ? 'VALIDADO' : 'INVÁLIDO') : 'INVÁLIDO'}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">***</td>
                             <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">***</td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
-                              {cepResult?.statistics.lowerControlLimit ? cepResult.statistics.lowerControlLimit.toFixed(4) : '***'}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
-                              {cepResult?.statistics.upperControlLimit ? cepResult.statistics.upperControlLimit.toFixed(4) : '***'}
-                            </td>
+                                                         <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
+                               {cepResult?.statistics.lowerControlLimit ? cepResult.statistics.lowerControlLimit.toFixed(4) : '***'}
+                             </td>
+                             <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
+                               {cepResult?.statistics.upperControlLimit ? cepResult.statistics.upperControlLimit.toFixed(4) : '***'}
+                             </td>
                           </tr>
                         );
                       })}
@@ -3453,82 +2269,25 @@ const App: React.FC = () => {
           </div>
         </div>
 
-                 {/* ====================================================================== */}
-         {/* PARTE 3 - AÇÕES E FERRAMENTAS */}
-         {/* ====================================================================== */}
-         
-         <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-           <div className="p-6 bg-blue-900 rounded-t-lg">
-             <h2 className="text-xl font-bold text-center text-white">
-               PARTE 3 - AÇÕES E FERRAMENTAS
-             </h2>
-           </div>
+        {/* ====================================================================== */}
+        {/* AÇÕES E ENTRADA MANUAL */}
+        {/* ====================================================================== */}
+        
+        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 bg-purple-600 rounded-t-lg">
+            <h3 className="text-lg font-bold text-white">AÇÕES E FERRAMENTAS</h3>
+          </div>
           
-          {/* Status de Campos Obrigatórios */}
-          {!requiredFieldsValidation.isValid && (
-            <div className="p-4 m-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <h4 className="font-medium text-yellow-800">Campos Obrigatórios Pendentes</h4>
-              <p className="text-sm text-yellow-700">
-                {requiredFieldsValidation.missingFields.slice(0, 3).join(', ')}
-                {requiredFieldsValidation.missingFields.length > 3 ? '...' : ''}
-              </p>
-            </div>
-          )}
-          
-                     <div className="p-6">
-             <div className="grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-8">
-            <button 
-                 onClick={() => setShowManualEntryModal(true)}
-                 className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
-            >
-                 ✏️ Entrada Manual
-            </button>
-            
-               <button
-                 onClick={importHistoricalData}
-                 className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-orange-600 rounded-lg transition-colors hover:bg-orange-700"
-               >
-                 📊 Importar Histórico
-               </button>
-            
-            <button 
-                 onClick={() => loadSampleDataFromTable()}
-                 className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-teal-600 rounded-lg transition-colors hover:bg-teal-700"
-            >
-                 🧪 Carregar Amostra
-            </button>
-            
-            <button 
-                 onClick={debugCEPCalculations}
-                 className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-purple-600 rounded-lg transition-colors hover:bg-purple-700"
-               >
-                 🔍 Debug CEP
-               </button>
-               
-               <button
-                 onClick={generateExcelTemplate}
-                 className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-green-600 rounded-lg transition-colors hover:bg-green-700"
-               >
-                 📊 Gerar Template
-            </button>
-          
-               <div className="relative">
-            <input
-              type="file"
-                   accept=".csv,.xlsx,.xls"
-                   onChange={handleFileImport}
-                   className="absolute inset-0 opacity-0 cursor-pointer"
-                   id="file-import"
-            />
-            <label
-                   htmlFor="file-import"
-                   className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-indigo-600 rounded-lg transition-colors cursor-pointer hover:bg-indigo-700"
-            >
-                   📁 Importar CSV
-            </label>
-               </div>
-            
-            <button
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+              <button
+                onClick={() => setShowManualEntryModal(true)}
+                className="flex gap-2 justify-center items-center px-4 py-3 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
+              >
+                ✏️ Entrada Manual
+              </button>
+              
+              <button
                 onClick={() => {
                   if (validateAndNotifyRequiredFields()) {
                     handleManualCEPValidation();
@@ -3539,7 +2298,7 @@ const App: React.FC = () => {
               >
                 {isCEPValidating ? '⏳ Validando...' : '🔄 Revalidar CEP'}
             </button>
-            
+          
               <button
                 onClick={() => {
                   if (validateAndNotifyRequiredFields()) {
@@ -3576,31 +2335,16 @@ const App: React.FC = () => {
         {/* MODAIS */}
         {/* ====================================================================== */}
         
-                 {/* Modal de Entrada Manual */}
-         {showManualEntryModal && (
-           <ManualEntryModal
-             isOpen={showManualEntryModal}
-             onClose={() => setShowManualEntryModal(false)}
-             onDataSubmit={handleManualDataSubmit}
-           />
-         )}
-        
-        {/* Modal de Histórico CEP */}
-        {showCEPHistoryModal && (
-          <CEPHistoryViewer
-            isOpen={showCEPHistoryModal}
-            onClose={() => setShowCEPHistoryModal(false)}
+        {/* Modal de Entrada Manual */}
+        {showManualEntryModal && (
+          <ManualEntryModal
+            isOpen={showManualEntryModal}
+            onClose={() => setShowManualEntryModal(false)}
+            onDataSubmit={handleManualDataSubmit}
           />
         )}
         
-                 {/* Sistema de Notificações */}
-         <NotificationSystem 
-           notifications={notifications} 
-           onRemove={removeNotification}
-      />
-    </div>
-    </ErrorBoundary>
-  );
-};
-
-export default App;
+        {/* Modal do Histórico CEP */}
+        <CEPHistoryViewer
+          isOpen={showCEPHistoryModal}
+          onClose={() => setShowCEPHistoryModal(false)}

@@ -14,7 +14,7 @@ const AGA8CriteriaIndicator: React.FC<AGA8CriteriaIndicatorProps> = ({
   
   const criteriaInfo = useMemo(() => {
     try {
-      // const { escolherCriterioAGA8 } = require('../aga8-criteria-validator'); // já importado no topo
+      // escolherCriterioAGA8 já importado no topo
       
       const temperatura = parseFloat(reportData.sampleInfo?.temperaturaAmostraC || '20');
       const pressao = parseFloat(reportData.sampleInfo?.pressaoAmostraAbsolutaKpaA || '0');

@@ -44,9 +44,6 @@ export const INITIAL_COMPONENTS: ComponentData[] = [
   { id: 15, name: 'Sulfeto de Hidrogênio (H₂S)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.1, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   { id: 16, name: 'Oxigênio (O₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.2, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   // Componentes AGA-8 adicionais (Range A)
-  { id: 17, name: 'Hidrogênio (H₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 5.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 18, name: 'Hélio (He)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.4, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 19, name: 'Argônio (Ar)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.2, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   { id: 20, name: 'Água (H₂O)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.05, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   { id: 21, name: 'Monóxido de Carbono (CO)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 1.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
 ];

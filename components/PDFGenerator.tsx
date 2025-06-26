@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 // import html2canvas from 'html2canvas';
 import { ReportData, ValidationStatus } from '../types';
 import { captureError } from '../src/config/sentry';
+import { generateCEPSection } from './PDFCEPIntegration';
 
 interface PDFGeneratorProps {
   reportData: ReportData;
@@ -132,6 +133,9 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
             </p>
           </div>
         </div>
+
+        <!-- CEP Section -->
+        ${generateCEPSection()}
 
         <!-- Footer -->
         <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #1b0571; text-align: center; font-size: 10px; color: #666;">

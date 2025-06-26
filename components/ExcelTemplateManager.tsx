@@ -377,7 +377,7 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
     // Processar linhas do CSV simples (formato: CAMPO,VALOR,OBSERVACAO)
     console.log('🔍 DEBUG: Processando', lines.length, 'linhas do CSV simples');
     
-    lines.forEach((line, index) => {
+    lines.forEach((line) => {
       const columns = line.split(',').map(col => col.replace(/"/g, '').trim());
       if (columns.length >= 2 && columns[0] && columns[1]) {
         const campo = columns[0];
@@ -945,10 +945,10 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
   }, [onDataImport, onNotification]);
 
   return (
-    <div className="mb-6 bg-white rounded-lg shadow-md border">
+    <div className="mb-6 bg-white rounded-lg border shadow-md">
       {/* Header recolhível */}
       <div 
-        className="flex items-center justify-between p-4 cursor-pointer border-b border-gray-200 hover:bg-gray-50 transition-colors"
+        className="flex justify-between items-center p-4 border-b border-gray-200 transition-colors cursor-pointer hover:bg-gray-50"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center space-x-3">
@@ -982,7 +982,7 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
         <div className="p-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {/* Gerar Template Simples (NOVO) */}
-            <div className="p-4 text-center rounded-lg border-2 border-yellow-300 border-dashed transition-colors hover:border-yellow-500 bg-yellow-50">
+            <div className="p-4 text-center bg-yellow-50 rounded-lg border-2 border-yellow-300 border-dashed transition-colors hover:border-yellow-500">
               <div className="mb-2 text-4xl">⭐</div>
               <h4 className="mb-2 font-medium text-gray-800">Template Simples</h4>
               <p className="mb-3 text-sm text-gray-600">
@@ -1051,7 +1051,7 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
             <h4 className="mb-2 font-medium text-gray-800">📝 Informações sobre Templates (CSV/Excel)</h4>
             
             {/* Template Simples - RECOMENDADO */}
-            <div className="p-3 mb-4 bg-yellow-100 border-l-4 border-yellow-500 rounded">
+            <div className="p-3 mb-4 bg-yellow-100 rounded border-l-4 border-yellow-500">
               <h5 className="font-semibold text-yellow-800">⭐ Template Simples (RECOMENDADO)</h5>
               <div className="mt-2 text-sm text-yellow-700">
                 <p><strong>Formato:</strong> Apenas 2 colunas - CAMPO e VALOR</p>
@@ -1067,7 +1067,7 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
             </div>
 
             {/* Template Completo */}
-            <div className="p-3 mb-4 bg-blue-100 border-l-4 border-blue-500 rounded">
+            <div className="p-3 mb-4 bg-blue-100 rounded border-l-4 border-blue-500">
               <h5 className="font-semibold text-blue-800">📋 Template Completo (Avançado)</h5>
               <div className="mt-2 text-sm text-blue-700">
                 <p><strong>Formato:</strong> 5 colunas (A,B,C,D,E) com seções estruturadas</p>

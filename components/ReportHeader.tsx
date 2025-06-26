@@ -36,7 +36,7 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({
       <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
         <div className="flex items-center">
           {logoSrc && <img src={logoSrc} alt="Logo" className="h-12 sm:h-16 mr-3 sm:mr-4 object-contain" />}
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">ANÁLISE CRÍTICA DE RESULTADOS ANALÍTICOS - CROMATOGRAFIA</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">ANÁLISE CRÍTICA DE BOLETINS ANALÍTICOS - CROMATOGRAFIA</h1>
         </div>
         <div className="group flex items-center space-x-2 sm:space-x-3"> {/* Parent hover group */}
           <div className="flex items-center space-x-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300"> {/* Font controls container */}

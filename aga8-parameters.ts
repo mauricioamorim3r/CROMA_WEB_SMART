@@ -106,21 +106,6 @@ export const AGA8_CRITICAL_PARAMETERS: Record<string, AGA8CriticalParameters> = 
   },
   
   // Special components
-  'Hidrogênio (H₂)': {
-    molarMass: 2.01588,
-    dc: 14.94,
-    Tc: 33.19
-  },
-  'Hélio (He)': {
-    molarMass: 4.00260,
-    dc: 17.399,
-    Tc: 5.1953
-  },
-  'Argônio (Ar)': {
-    molarMass: 39.94800,
-    dc: 13.40743,
-    Tc: 150.687
-  },
   'Água (H₂O)': {
     molarMass: 18.01528,
     dc: 17.87372,
