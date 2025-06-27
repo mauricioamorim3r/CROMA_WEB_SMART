@@ -7,6 +7,11 @@ export default defineConfig(({ mode }) => {
     return {
       plugins: [react()],
       base: './',
+      server: {
+        port: 8080,
+        host: true,
+        open: true
+      },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)

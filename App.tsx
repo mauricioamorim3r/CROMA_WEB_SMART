@@ -22,6 +22,7 @@ import CEPHistoryViewer from './components/CEPHistoryViewer';
 import StatusBadge from './components/ui/StatusBadge';
 import { useCEPValidation } from './src/hooks/useCEPValidation';
 
+
 // Notification system
 interface Notification {
   id: string;
@@ -2757,6 +2758,8 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <div className="container p-4 mx-auto min-h-screen bg-gray-50">
         
+
+
         {/* ====================================================================== */}
         {/* CABEÇALHO - IDENTIFICAÇÃO DO REGISTRO */}
         {/* ====================================================================== */}
@@ -2813,55 +2816,55 @@ const App: React.FC = () => {
         {/* PARTE 1 - VERIFICAÇÃO DOCUMENTAL DO BOLETIM */}
         {/* ====================================================================== */}
         
-        <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-6 bg-blue-900 rounded-t-lg">
+        <div className="mb-6 bg-white rounded-lg border border-gray-300 shadow-lg shadow-gray-200/50">
+          <div className="p-6 bg-blue-900 rounded-t-lg border-b border-gray-200">
             <h2 className="text-xl font-bold text-center text-white">
               PARTE 1 - VERIFICAÇÃO DOCUMENTAL DO BOLETIM (ISO/IEC 17025)
             </h2>
           </div>
           
           {/* 1. Lista de Verificação NBR ISO/IEC 17025 */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
+          <div className="mb-4 border border-gray-300 rounded-lg shadow-md shadow-gray-200/30">
+            <div className="p-4 bg-blue-600 rounded-t-lg border-b border-gray-200">
               <h3 className="text-lg font-bold text-white">1. LISTA DE VERIFICAÇÃO NBR ISO/IEC 17025</h3>
             </div>
             
             {expandedSections.parte1.item1 && (
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-4">
                 <div className="overflow-x-auto">
-                  <table className="overflow-hidden min-w-full rounded-lg border border-gray-300 divide-y divide-gray-200">
+                  <table className="overflow-hidden min-w-full rounded-lg border border-gray-300 divide-y divide-gray-300 shadow-sm bg-white">
                     <thead className="bg-blue-600">
                       <tr>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">
                           ITEM
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">
                           DESCRIÇÃO
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">
                           SIM
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">
                           NÃO
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">
                           NÃO APLICÁVEL
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase">
                           OBSERVAÇÃO
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-300">
                       {checklistItems.map((item, index) => (
-                        <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-4 py-3 text-sm font-medium text-center text-gray-900 border border-gray-300">
+                        <tr key={item.id} className={index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/30 hover:bg-gray-100/50'}>
+                          <td className="px-4 py-3 text-sm font-medium text-center text-gray-900 border-r border-gray-300/70">
                             {item.id}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 border border-gray-300">
+                          <td className="px-4 py-3 text-sm text-gray-900 border-r border-gray-300/70">
                             {item.description}
                           </td>
-                          <td className="px-4 py-3 text-center border border-gray-300">
+                          <td className="px-4 py-3 text-center border-r border-gray-300/70">
                             <input
                               type="radio"
                               name={`checklist-${item.id}`}
@@ -2870,7 +2873,7 @@ const App: React.FC = () => {
                               className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
                             />
                           </td>
-                          <td className="px-4 py-3 text-center border border-gray-300">
+                          <td className="px-4 py-3 text-center border-r border-gray-300/70">
                             <input
                               type="radio"
                               name={`checklist-${item.id}`}
@@ -2879,7 +2882,7 @@ const App: React.FC = () => {
                               className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 focus:ring-red-500"
                             />
                           </td>
-                          <td className="px-4 py-3 text-center border border-gray-300">
+                          <td className="px-4 py-3 text-center border-r border-gray-300/70">
                             <input
                               type="radio"
                               name={`checklist-${item.id}`}
@@ -2888,12 +2891,12 @@ const App: React.FC = () => {
                               className="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500"
                             />
                           </td>
-                          <td className="px-4 py-3 border border-gray-300">
+                          <td className="px-4 py-3">
                             <input
                               type="text"
                               value={item.observation}
                               onChange={(e) => handleChecklistChange(item.id, 'observation', e.target.value)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                              className="p-1 w-full text-sm rounded border border-gray-300/70 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50 focus:bg-white"
                               placeholder="Observações"
                             />
                           </td>
@@ -2907,13 +2910,13 @@ const App: React.FC = () => {
           </div>
 
           {/* 2. Informações do Solicitante */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
+          <div className="mb-4 border border-gray-300 rounded-lg shadow-md shadow-gray-200/30">
+            <div className="p-4 bg-blue-600 rounded-t-lg border-b border-gray-200">
               <h3 className="text-lg font-bold text-white">2. INFORMAÇÕES DO SOLICITANTE</h3>
             </div>
             
             {expandedSections.parte1.item2 && (
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">
@@ -2943,13 +2946,13 @@ const App: React.FC = () => {
           </div>
 
           {/* 3. Informações da Amostra */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
+          <div className="mb-4 border border-gray-300 rounded-lg shadow-md shadow-gray-200/30">
+            <div className="p-4 bg-blue-600 rounded-t-lg border-b border-gray-200">
               <h3 className="text-lg font-bold text-white">3. INFORMAÇÕES DA AMOSTRA</h3>
             </div>
             
             {expandedSections.parte1.item3 && (
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">
@@ -3185,45 +3188,45 @@ const App: React.FC = () => {
         </div>
 
           {/* 6. Propriedades do Gás - Condições Padrão */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
+          <div className="mb-4 border border-gray-300 rounded-lg shadow-md shadow-gray-200/30">
+            <div className="p-4 bg-blue-600 rounded-t-lg border-b border-gray-200">
               <h3 className="text-lg font-bold text-white">6. PROPRIEDADES DO GÁS - CONDIÇÕES PADRÃO</h3>
             </div>
             
             {expandedSections.parte1.item6 && (
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-4">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full border border-gray-300 rounded-lg shadow-sm bg-white divide-y divide-gray-300">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Propriedade</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Valor</th>
-                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Incerteza Expandida</th>
+                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase border-r border-gray-300/50">Propriedade</th>
+                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase border-r border-gray-300/50">Valor</th>
+                        <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase border-r border-gray-300/50">Incerteza Expandida</th>
                         <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status CEP</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-300">
                       {reportData.standardProperties.map((property, index) => (
-                        <tr key={property.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        <tr key={property.id} className={index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/30 hover:bg-gray-100/50'}>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 border-r border-gray-300/70">
                             {property.name}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 border-r border-gray-300/70">
                             <input
                               type="number"
                               step="0.0001"
                               value={property.value}
                               onChange={(e) => handleStandardPropertyChange(property.id, 'value', e.target.value)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                              className="p-1 w-full text-sm rounded border border-gray-300/70 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50 focus:bg-white"
                             />
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 border-r border-gray-300/70">
                             <input
                               type="number"
                               step="0.0001"
                               value={property.incertezaExpandida}
                               onChange={(e) => handleStandardPropertyChange(property.id, 'incertezaExpandida', e.target.value)}
-                              className="p-1 w-full text-sm rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                              className="p-1 w-full text-sm rounded border border-gray-300/70 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50 focus:bg-white"
                             />
                           </td>
                           <td className="px-4 py-3 text-sm">
@@ -3243,8 +3246,8 @@ const App: React.FC = () => {
         {/* OBSERVAÇÕES */}
         {/* ====================================================================== */}
         
-        <div className="mt-8 mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-4 bg-gray-600 rounded-t-lg">
+        <div className="mt-8 mb-6 bg-white rounded-lg border border-gray-300 shadow-lg shadow-gray-200/50">
+          <div className="p-4 bg-gray-600 rounded-t-lg border-b border-gray-200">
             <h3 className="text-lg font-bold text-white">OBSERVAÇÕES</h3>
           </div>
           
@@ -3253,7 +3256,7 @@ const App: React.FC = () => {
               value={reportData.observacoesBoletim}
               onChange={(e) => handleInputChange('observacoesBoletim', e.target.value)}
               rows={4}
-              className="p-3 w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+              className="p-3 w-full rounded-md border border-gray-300/70 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50 focus:bg-white shadow-inner"
               placeholder="Inserir observações feitas no boletim..."
             />
           </div>
@@ -3263,63 +3266,63 @@ const App: React.FC = () => {
         {/* PARTE 2 - VALIDAÇÃO TÉCNICA E METROLÓGICA */}
         {/* ====================================================================== */}
         
-        <div className="mt-8 mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-6 bg-blue-900 rounded-t-lg">
+        <div className="mt-8 mb-6 bg-white rounded-lg border border-gray-300 shadow-lg shadow-gray-200/50">
+          <div className="p-6 bg-blue-900 rounded-t-lg border-b border-gray-200">
             <h2 className="text-xl font-bold text-center text-white">
               PARTE 2 - VALIDAÇÃO TÉCNICA E METROLÓGICA DOS RESULTADOS
             </h2>
           </div>
           
           {/* 5. Resultados da Validação - Componentes */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
+          <div className="mb-4 border border-gray-300 rounded-lg shadow-md shadow-gray-200/30">
+            <div className="p-4 bg-blue-600 rounded-t-lg border-b border-gray-200">
                              <h3 className="text-lg font-bold text-white">6. RESULTADOS DA VALIDAÇÃO - COMPONENTES</h3>
             </div>
             
             {expandedSections.parte2.item5 && (
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-4">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+                  <table className="min-w-full border border-gray-300 rounded-lg shadow-sm bg-white divide-y divide-gray-300">
                     <thead className="bg-blue-900">
                       <tr>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Item</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Componente</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">% Molar</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Status AGA8</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Status CEP</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border border-gray-300" colSpan={2}>AGA8</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border border-gray-300" colSpan={2}>CEP</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Item</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Componente</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">% Molar</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Status AGA8</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Status CEP</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border-r border-gray-400/50" colSpan={2}>AGA8</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700" colSpan={2}>CEP</th>
                       </tr>
                       <tr>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border border-gray-300">Limite Inferior</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border border-gray-300">Limite Superior</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border border-gray-300">Limite Inferior</th>
-                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border border-gray-300">Limite Superior</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border-r border-gray-400/50">Limite Inferior</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border-r border-gray-400/50">Limite Superior</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border-r border-gray-400/50">Limite Inferior</th>
+                        <th className="px-3 py-2 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700">Limite Superior</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-300">
                       {reportData.components.map((component, index) => {
                         const molarValue = parseFloat(component.molarPercent) || 0;
                         const isValidated = component.molarPercent && molarValue > 0;
                         const cepResult = cepComponentResults.find(r => r.componentName === component.name);
                         
                         return (
-                          <tr key={component.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                            <td className="px-3 py-2 text-sm font-medium text-center text-gray-900 border border-gray-300">
+                          <tr key={component.id} className={index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/30 hover:bg-gray-100/50'}>
+                            <td className="px-3 py-2 text-sm font-medium text-center text-gray-900 border-r border-gray-300/70">
                               {component.id}
                             </td>
-                            <td className="px-3 py-2 text-sm text-gray-900 border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-gray-900 border-r border-gray-300/70">
                               {component.name}
                             </td>
-                            <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center text-gray-900 border-r border-gray-300/70">
                               {isValidated ? `${molarValue.toFixed(3)}%` : '---'}
                             </td>
-                            <td className="px-3 py-2 text-sm text-center border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center border-r border-gray-300/70">
                               <span className={`px-2 py-1 text-xs font-semibold rounded ${
                                 component.aga8Status === ValidationStatus.OK ? 'bg-green-100 text-green-800' :
                                 component.aga8Status === ValidationStatus.ForaDaFaixa ? 'bg-red-100 text-red-800' :
@@ -3329,7 +3332,7 @@ const App: React.FC = () => {
                                                 component.aga8Status === ValidationStatus.ForaDaFaixa ? 'INVÁLIDO' : 'PENDENTE') : '***'}
                               </span>
                             </td>
-                            <td className="px-3 py-2 text-sm text-center border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center border-r border-gray-300/70">
                               <span className={`px-2 py-1 text-xs font-semibold rounded ${
                                 component.cepStatus === ValidationStatus.OK ? 'bg-green-100 text-green-800' :
                                 component.cepStatus === ValidationStatus.ForaDaFaixa ? 'bg-red-100 text-red-800' :
@@ -3339,29 +3342,29 @@ const App: React.FC = () => {
                                                component.cepStatus === ValidationStatus.ForaDaFaixa ? 'INVÁLIDO' : 'PENDENTE') : '***'}
                               </span>
                             </td>
-                            <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center text-gray-900 border-r border-gray-300/70">
                               {isValidated ? `${component.aga8Min}%` : '0%'}
                             </td>
-                            <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center text-gray-900 border-r border-gray-300/70">
                               {isValidated ? `${component.aga8Max}%` : '100%'}
                             </td>
-                            <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center text-gray-900 border-r border-gray-300/70">
                               {cepResult?.statistics.lowerControlLimit ? cepResult.statistics.lowerControlLimit.toFixed(3) + '%' : '***'}
                             </td>
-                            <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-3 py-2 text-sm text-center text-gray-900">
                               {cepResult?.statistics.upperControlLimit ? cepResult.statistics.upperControlLimit.toFixed(3) + '%' : '***'}
                             </td>
                           </tr>
                         );
                       })}
                       {/* Linha de Total */}
-                      <tr className="font-semibold bg-yellow-200">
-                        <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300"></td>
-                        <td className="px-3 py-2 text-sm text-gray-900 border border-gray-300">TOTAL</td>
-                        <td className="px-3 py-2 text-sm text-center text-gray-900 border border-gray-300">
+                      <tr className="font-semibold bg-yellow-200/80 hover:bg-yellow-200">
+                        <td className="px-3 py-2 text-sm text-center text-gray-900 border-r border-gray-300/70"></td>
+                        <td className="px-3 py-2 text-sm text-gray-900 border-r border-gray-300/70">TOTAL</td>
+                        <td className="px-3 py-2 text-sm text-center text-gray-900 border-r border-gray-300/70">
                           {molarValidation.total.toFixed(2)}%
                         </td>
-                        <td className="px-3 py-2 text-sm text-center border border-gray-300" colSpan={6}>
+                        <td className="px-3 py-2 text-sm text-center" colSpan={6}>
                           <span className={`px-2 py-1 text-xs font-semibold rounded ${
                             molarValidation.isValid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
@@ -3377,55 +3380,55 @@ const App: React.FC = () => {
           </div>
 
           {/* 6. Resultados da Validação - Propriedades */}
-          <div className="mb-4 border-b border-gray-200">
-            <div className="p-4 bg-blue-600 rounded-t-lg">
+          <div className="mb-4 border border-gray-300 rounded-lg shadow-md shadow-gray-200/30">
+            <div className="p-4 bg-blue-600 rounded-t-lg border-b border-gray-200">
                              <h3 className="text-lg font-bold text-white">7. RESULTADOS DA VALIDAÇÃO - PROPRIEDADES</h3>
             </div>
             
             {expandedSections.parte2.item6 && (
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-4">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+                  <table className="min-w-full border border-gray-300 rounded-lg shadow-sm bg-white divide-y divide-gray-300">
                     <thead className="bg-blue-900">
                       <tr>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Propriedade</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Valor</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Status AGA8</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border border-gray-300">Status CEP</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border border-gray-300" colSpan={2}>AGA8</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border border-gray-300" colSpan={2}>CEP</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Propriedade</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Valor</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Status AGA8</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-gray-400/50">Status CEP</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border-r border-gray-400/50" colSpan={2}>AGA8</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700" colSpan={2}>CEP</th>
                       </tr>
                       <tr>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border border-gray-300"></th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border border-gray-300">Limite Inferior</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border border-gray-300">Limite Superior</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border border-gray-300">Limite Inferior</th>
-                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border border-gray-300">Limite Superior</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-900 border-r border-gray-400/50"></th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border-r border-gray-400/50">Limite Inferior</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-800 border-r border-gray-400/50">Limite Superior</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700 border-r border-gray-400/50">Limite Inferior</th>
+                        <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-700">Limite Superior</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-300">
                       {reportData.standardProperties.map((property, index) => {
                         const propertyValue = parseFloat(property.value) || 0;
                         const isValidated = property.value && propertyValue > 0;
                         const cepResult = cepPropertyResults.find(r => r.componentName === property.name);
                         
                         return (
-                          <tr key={property.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                            <td className="px-4 py-3 text-sm text-gray-900 border border-gray-300">
+                          <tr key={property.id} className={index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/30 hover:bg-gray-100/50'}>
+                            <td className="px-4 py-3 text-sm text-gray-900 border-r border-gray-300/70">
                               {property.name}
                             </td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-4 py-3 text-sm text-center text-gray-900 border-r border-gray-300/70">
                               {isValidated ? propertyValue.toFixed(4) : '***'}
                             </td>
-                            <td className="px-4 py-3 text-sm text-center border border-gray-300">
+                            <td className="px-4 py-3 text-sm text-center border-r border-gray-300/70">
                               <span className="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded">
                                 ***
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-sm text-center border border-gray-300">
+                            <td className="px-4 py-3 text-sm text-center border-r border-gray-300/70">
                               <span className={`px-2 py-1 text-xs font-semibold rounded ${
                                 property.cepStatus === ValidationStatus.OK ? 'bg-green-100 text-green-800' :
                                 property.cepStatus === ValidationStatus.ForaDaFaixa ? 'bg-red-100 text-red-800' :
@@ -3434,12 +3437,12 @@ const App: React.FC = () => {
                                 {isValidated ? (property.cepStatus === ValidationStatus.OK ? 'VALIDADO' : 'PENDENTE') : '***'}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">***</td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">***</td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-4 py-3 text-sm text-center text-gray-900 border-r border-gray-300/70">***</td>
+                            <td className="px-4 py-3 text-sm text-center text-gray-900 border-r border-gray-300/70">***</td>
+                            <td className="px-4 py-3 text-sm text-center text-gray-900 border-r border-gray-300/70">
                               {cepResult?.statistics.lowerControlLimit ? cepResult.statistics.lowerControlLimit.toFixed(4) : '***'}
                             </td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900 border border-gray-300">
+                            <td className="px-4 py-3 text-sm text-center text-gray-900">
                               {cepResult?.statistics.upperControlLimit ? cepResult.statistics.upperControlLimit.toFixed(4) : '***'}
                             </td>
                           </tr>
@@ -3457,8 +3460,8 @@ const App: React.FC = () => {
          {/* PARTE 3 - AÇÕES E FERRAMENTAS */}
          {/* ====================================================================== */}
          
-         <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-           <div className="p-6 bg-blue-900 rounded-t-lg">
+         <div className="mb-6 bg-white rounded-lg border border-gray-300 shadow-lg shadow-gray-200/50">
+           <div className="p-6 bg-blue-900 rounded-t-lg border-b border-gray-200">
              <h2 className="text-xl font-bold text-center text-white">
                PARTE 3 - AÇÕES E FERRAMENTAS
              </h2>
