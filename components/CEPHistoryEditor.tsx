@@ -41,7 +41,7 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
             fatorCompressibilidade: sample.properties?.fatorCompressibilidade ?? 0,
             massaEspecifica: sample.properties?.massaEspecifica ?? 0,
             massaMolecular: sample.properties?.massaMolecular ?? 0,
-            condicaoReferencia: sample.properties?.condicaoReferencia ?? ''
+      
           },
           editHistory: sample.editHistory || []
         }));
@@ -87,8 +87,7 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
       // Propriedades - garantir valores válidos
       fatorCompressibilidade: sample.properties?.fatorCompressibilidade ?? 0,
       massaEspecifica: sample.properties?.massaEspecifica ?? 0,
-      massaMolecular: sample.properties?.massaMolecular ?? 0,
-      condicaoReferencia: sample.properties?.condicaoReferencia ?? ''
+      massaMolecular: sample.properties?.massaMolecular ?? 0
     };
     setEditValues(allValues);
   };
@@ -132,8 +131,7 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
     const propertyMap = {
       fatorCompressibilidade: sample.properties.fatorCompressibilidade,
       massaEspecifica: sample.properties.massaEspecifica,
-      massaMolecular: sample.properties.massaMolecular,
-      condicaoReferencia: sample.properties.condicaoReferencia
+      massaMolecular: sample.properties.massaMolecular
     };
 
     Object.entries(propertyMap).forEach(([key, originalValue]) => {
@@ -232,9 +230,8 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
 
   const handleInputChange = (field: string, value: string) => {
     const isDateField = CEP_COLUMNS_CONFIG.dates.some(d => d.key === field);
-    const isStringField = field === 'condicaoReferencia';
     
-    const processedValue = (isDateField || isStringField) ? value : (parseFloat(value) || 0);
+    const processedValue = isDateField ? value : (parseFloat(value) || 0);
     
     setEditValues(prev => ({
       ...prev,
@@ -256,7 +253,7 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
     if (field === 'fatorCompressibilidade') return sample.properties?.fatorCompressibilidade ?? 0;
     if (field === 'massaEspecifica') return sample.properties?.massaEspecifica ?? 0;
     if (field === 'massaMolecular') return sample.properties?.massaMolecular ?? 0;
-    if (field === 'condicaoReferencia') return sample.properties?.condicaoReferencia ?? '';
+
     
     return 0;
   };
@@ -269,8 +266,7 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
     ...CEP_COLUMNS_CONFIG.totals.map(t => t.key),
     'fatorCompressibilidade',
     'massaEspecifica', 
-    'massaMolecular',
-    'condicaoReferencia'
+    'massaMolecular'
   ];
 
   const getColumnLabel = (field: string): string => {
@@ -327,10 +323,9 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
                     <td key={field} className="border border-gray-300 px-2 py-1">
                       {editingId === sample.id ? (
                         <input
-                          type={CEP_COLUMNS_CONFIG.dates.some(d => d.key === field) ? 'date' : 
-                                field === 'condicaoReferencia' ? 'text' : 'number'}
-                          step={field === 'condicaoReferencia' ? undefined : "0.0001"}
-                          value={editValues[field] ?? (field === 'condicaoReferencia' ? '' : 0)}
+                          type={CEP_COLUMNS_CONFIG.dates.some(d => d.key === field) ? 'date' : 'number'}
+                          step="0.0001"
+                          value={editValues[field] ?? 0}
                           onChange={(e) => handleInputChange(field, e.target.value)}
                           className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
                         />
@@ -339,10 +334,15 @@ const CEPHistoryEditor: React.FC<CEPHistoryEditorProps> = ({ onDataUpdate }) => 
                           {CEP_COLUMNS_CONFIG.dates.some(d => d.key === field) ? 
                             (() => {
                               const dateValue = getDisplayValue(sample, field) as string;
+                              // Se a data já está em formato DD/MM/YYYY, exibir diretamente
+                              if (dateValue && dateValue.includes('/')) {
+                                return dateValue;
+                              }
+                              // Se for ISO string, converter para DD/MM/YYYY
                               try {
                                 return dateValue ? new Date(dateValue).toLocaleDateString('pt-BR') : '-';
                               } catch {
-                                return '-';
+                                return dateValue || '-';
                               }
                             })() :
                             formatValue(getDisplayValue(sample, field))

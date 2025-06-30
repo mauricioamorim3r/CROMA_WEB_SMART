@@ -285,7 +285,7 @@ export interface CEPHistoricalSample {
     fatorCompressibilidade: number;  // Fator de Compressibilidade
     massaEspecifica: number;         // Massa Específica
     massaMolecular: number;          // Massa Molecular
-    condicaoReferencia: string;      // Condição de Referência (20°C/1 atm)
+  
   };
   
   // Histórico de edições
@@ -331,6 +331,6 @@ export const CEP_COLUMNS_CONFIG = {
     { key: 'fatorCompressibilidade', label: 'Fator de Compressibilidade' },
     { key: 'massaEspecifica', label: 'Massa Específica' },
     { key: 'massaMolecular', label: 'Massa Molecular' },
-    { key: 'condicaoReferencia', label: 'Condição de Referência (20°C/1 atm)' }
+
   ]
 } as const;

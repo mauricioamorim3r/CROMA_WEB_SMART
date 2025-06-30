@@ -130,8 +130,7 @@ const CEPHistoryViewer: React.FC<CEPHistoryViewerProps> = ({ isOpen, onClose }) 
       'Total',
       'Fator de Compressibilidade',
       'Massa Específica',
-      'Massa Molecular',
-      'Condição de Referência'
+      'Massa Molecular'
     ];
 
     // Criar linhas de dados
@@ -146,8 +145,7 @@ const CEPHistoryViewer: React.FC<CEPHistoryViewerProps> = ({ isOpen, onClose }) 
       sample.totalComposicao.toFixed(4),
       sample.properties.fatorCompressibilidade.toFixed(4),
       sample.properties.massaEspecifica.toFixed(4),
-      sample.properties.massaMolecular.toFixed(4),
-      sample.properties.condicaoReferencia
+      sample.properties.massaMolecular.toFixed(4)
     ]);
 
     const csvContent = [headers, ...rows]
@@ -191,8 +189,7 @@ const CEPHistoryViewer: React.FC<CEPHistoryViewerProps> = ({ isOpen, onClose }) 
     { key: 'totalComposicao', label: 'TOTAL' },
     { key: 'fatorCompressibilidade', label: 'Fator de Compressibilidade' },
     { key: 'massaEspecifica', label: 'Massa Específica' },
-    { key: 'massaMolecular', label: 'Massa Molecular' },
-    { key: 'condicaoReferencia', label: 'Condição de Referência' }
+    { key: 'massaMolecular', label: 'Massa Molecular' }
   ];
 
   const getDisplayValue = (sample: CEPHistoricalSample, columnKey: string): string => {
@@ -213,8 +210,6 @@ const CEPHistoryViewer: React.FC<CEPHistoryViewerProps> = ({ isOpen, onClose }) 
         return sample.properties.massaEspecifica.toFixed(4);
       case 'massaMolecular':
         return sample.properties.massaMolecular.toFixed(4);
-      case 'condicaoReferencia':
-        return sample.properties.condicaoReferencia;
       default:
         // É um componente
         const value = (sample.components as any)[columnKey] || 0;

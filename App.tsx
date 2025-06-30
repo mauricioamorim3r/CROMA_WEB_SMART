@@ -2810,9 +2810,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_0`,
             boletimNumber: "PTJ/23-10970",
             date: convertDate("03/12/2023"),
-            dataColeta: "2023-12-03",
-            dataEmissaoRelatorio: "2023-12-20",
-            dataValidacao: "2023-12-20",
+            dataColeta: "03/12/2023",
+            dataEmissaoRelatorio: "20/12/2023",
+            dataValidacao: "20/12/2023",
             components: {
               "Metano (C₁)": 97.626,
               "Etano (C₂)": 0.085,
@@ -2834,8 +2834,7 @@ const App: React.FC = () => {
             properties: {
               fatorCompressibilidade: 0.9979,
               massaEspecifica: 0.710,
-              massaMolecular: 17.0313,
-              condicaoReferencia: "20°C/1 atm"
+              massaMolecular: 17.0313
             },
             editHistory: []
           },
@@ -2843,9 +2842,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_1`,
             boletimNumber: "PTJ/23-11278",
             date: convertDate("30/12/2023"),
-            dataColeta: "2023-12-30",
-            dataEmissaoRelatorio: "2024-01-18",
-            dataValidacao: "2024-01-18",
+            dataColeta: "30/12/2023",
+            dataEmissaoRelatorio: "18/01/2024",
+            dataValidacao: "18/01/2024",
             components: {
               "Metano (C₁)": 98.101,
               "Etano (C₂)": 0.086,
@@ -2867,8 +2866,7 @@ const App: React.FC = () => {
             properties: {
               fatorCompressibilidade: 0.9980,
               massaEspecifica: 0.689,
-              massaMolecular: 16.5274,
-              condicaoReferencia: "20°C/1 atm"
+              massaMolecular: 16.5274
             },
             editHistory: []
           },
@@ -2876,9 +2874,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_2`,
             boletimNumber: "PTJ/24-11737",
             date: convertDate("23/01/2024"),
-            dataColeta: "2024-01-23",
-            dataEmissaoRelatorio: "2024-02-15",
-            dataValidacao: "2024-02-15",
+            dataColeta: "23/01/2024",
+            dataEmissaoRelatorio: "15/02/2024",
+            dataValidacao: "15/02/2024",
             components: {
               "Metano (C₁)": 97.289,
               "Etano (C₂)": 0.131,
@@ -2900,8 +2898,7 @@ const App: React.FC = () => {
             properties: {
               fatorCompressibilidade: 0.9981,
               massaEspecifica: 0.691,
-              massaMolecular: 16.5859,
-              condicaoReferencia: "20°C/1 atm"
+              massaMolecular: 16.5859
             },
             editHistory: []
           },
@@ -2909,9 +2906,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_3`,
             boletimNumber: "PTJ/24-12161",
             date: convertDate("19/02/2024"),
-            dataColeta: "2024-02-19",
-            dataEmissaoRelatorio: "2024-03-07",
-            dataValidacao: "2024-03-07",
+            dataColeta: "19/02/2024",
+            dataEmissaoRelatorio: "07/03/2024",
+            dataValidacao: "07/03/2024",
             components: {
               "Metano (C₁)": 97.151,
               "Etano (C₂)": 0.160,
@@ -2933,8 +2930,7 @@ const App: React.FC = () => {
             properties: {
               fatorCompressibilidade: 0.9979,
               massaEspecifica: 0.704,
-              massaMolecular: 16.8914,
-              condicaoReferencia: "20°C/1 atm"
+              massaMolecular: 16.8914
             },
             editHistory: []
           },
@@ -2942,9 +2938,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_4`,
             boletimNumber: "PTJ/24-12574",
             date: convertDate("17/03/2024"),
-            dataColeta: "2024-03-17",
-            dataEmissaoRelatorio: "2024-04-03",
-            dataValidacao: "2024-04-04",
+            dataColeta: "17/03/2024",
+            dataEmissaoRelatorio: "03/04/2024",
+            dataValidacao: "04/04/2024",
             components: {
               "Metano (C₁)": 97.821,
               "Etano (C₂)": 0.094,
@@ -2966,8 +2962,7 @@ const App: React.FC = () => {
             properties: {
               fatorCompressibilidade: 0.9980,
               massaEspecifica: 0.693,
-              massaMolecular: 16.6309,
-              condicaoReferencia: "20°C/1 atm"
+              massaMolecular: 16.6309
             },
             editHistory: []
           },
@@ -2975,9 +2970,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_5`,
             boletimNumber: "PTJ/24-13046",
             date: convertDate("15/04/2024"),
-            dataColeta: "2024-04-15",
-            dataEmissaoRelatorio: "2024-05-06",
-            dataValidacao: "2024-05-07",
+            dataColeta: "15/04/2024",
+            dataEmissaoRelatorio: "06/05/2024",
+            dataValidacao: "07/05/2024",
             components: {
               "Metano (C₁)": 98.396,
               "Etano (C₂)": 0.089,
@@ -2999,8 +2994,7 @@ const App: React.FC = () => {
             properties: {
               fatorCompressibilidade: 0.9980,
               massaEspecifica: 0.688,
-              massaMolecular: 16.5224,
-              condicaoReferencia: "20°C/1 atm"
+              massaMolecular: 16.5224
             },
             editHistory: []
           },
@@ -3008,9 +3002,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_6`,
             boletimNumber: "PTJ/24-13669",
             date: convertDate("28/05/2024"),
-            dataColeta: "2024-05-28",
-            dataEmissaoRelatorio: "2024-06-18",
-            dataValidacao: "2024-06-18",
+            dataColeta: "28/05/2024",
+            dataEmissaoRelatorio: "18/06/2024",
+            dataValidacao: "18/06/2024",
             components: {
               "Metano (C₁)": 97.298,
               "Etano (C₂)": 0.151,
@@ -3033,7 +3027,7 @@ const App: React.FC = () => {
               fatorCompressibilidade: 0.9980,
               massaEspecifica: 0.693,
               massaMolecular: 16.6279,
-              condicaoReferencia: "20°C/1 atm"
+
             },
             editHistory: []
           },
@@ -3041,9 +3035,9 @@ const App: React.FC = () => {
             id: `latest_analysis_${Date.now()}_7`,
             boletimNumber: "PTJ/24-14803",
             date: convertDate("29/07/2024"),
-            dataColeta: "2024-07-29",
-            dataEmissaoRelatorio: "2024-08-19",
-            dataValidacao: "2024-08-19",
+            dataColeta: "29/07/2024",
+            dataEmissaoRelatorio: "19/08/2024",
+            dataValidacao: "19/08/2024",
             components: {
               "Metano (C₁)": 97.550,
               "Etano (C₂)": 0.097,
@@ -3814,10 +3808,10 @@ const App: React.FC = () => {
                             <td className={`border-2 border-gray-300 ${TABLE_TD_CLASS}`}><StatusBadge status={component.aga8Status} /></td>
                             <td className={`border-2 border-gray-300 ${TABLE_TD_CLASS}`}><StatusBadge status={component.cepStatus} /></td>
                             <td className={`text-center border-2 border-gray-300 ${TABLE_TD_CLASS}`}>
-                              {isValidated ? `${component.aga8Min}%` : '0%'}
+                              {component.aga8Min}%
                             </td>
                             <td className={`text-center border-2 border-gray-300 ${TABLE_TD_CLASS}`}>
-                              {isValidated ? `${component.aga8Max}%` : '100%'}
+                              {component.aga8Max}%
                             </td>
                             <td className={`text-center border-2 border-gray-300 ${TABLE_TD_CLASS}`}>
                               {cepResult?.statistics.lowerControlLimit ? cepResult.statistics.lowerControlLimit.toFixed(3) + '%' : '***'}

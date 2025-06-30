@@ -321,7 +321,7 @@ export const useCEPValidation = (
         fatorCompressibilidade: parseFloat(properties.find(p => p.id === 'compressibilityFactor')?.value || '0'),
         massaEspecifica: parseFloat(properties.find(p => p.id === 'relativeDensity')?.value || '0'),
         massaMolecular: parseFloat(properties.find(p => p.id === 'molarMass')?.value || '0'),
-        condicaoReferencia: '20°C/1 atm'
+
       },
       editHistory: []
     };
