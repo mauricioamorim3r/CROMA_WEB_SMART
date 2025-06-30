@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { ReportData, SolicitanteInfo, SampleInfo, BulletinInfo, ValidationStatus, ProcessType } from '../types';
 import { INPUT_CLASS, LABEL_CLASS } from '../constants';
@@ -12,7 +10,18 @@ interface DocumentAndSampleInfoFormProps {
 
 const DateValidationMessage: React.FC<{ status: ValidationStatus; message: string | null }> = ({ status, message }) => {
   if (status === ValidationStatus.ForaDaFaixa && message) {
-    return <p className="mt-1 text-xs text-red-600">{message}</p>;
+    return (
+      <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded">
+        <p className="text-xs text-red-700 font-medium">⚠️ {message}</p>
+      </div>
+    );
+  }
+  if (status === ValidationStatus.OK && message) {
+    return (
+      <div className="mt-1 p-2 bg-green-50 border border-green-200 rounded">
+        <p className="text-xs text-green-700">✅ {message}</p>
+      </div>
+    );
   }
   return null;
 };
@@ -36,6 +45,18 @@ const DocumentAndSampleInfoForm: React.FC<DocumentAndSampleInfoFormProps> = ({ r
   };
 
   const validations = reportData.dateValidationDetails;
+
+  // Verificar se há problemas específicos na seção de amostra (coleta)
+  const hasSampleANP52Issues = (
+    validations.anp52_prazoColetaEmissao.status === ValidationStatus.ForaDaFaixa ||
+    validations.anp52_prazoColetaImplementacao.status === ValidationStatus.ForaDaFaixa
+  );
+
+  // Verificar se há problemas específicos na seção de boletim
+  const hasBulletinANP52Issues = (
+    validations.anp52_prazoColetaEmissao.status === ValidationStatus.ForaDaFaixa ||
+    validations.anp52_prazoColetaImplementacao.status === ValidationStatus.ForaDaFaixa
+  );
 
   return (
     <div className="p-6 mb-6 bg-white rounded-xl shadow-lg">
@@ -62,12 +83,40 @@ const DocumentAndSampleInfoForm: React.FC<DocumentAndSampleInfoFormProps> = ({ r
           <input type="text" id="enderecoLocalizacaoClienteSolicitante" value={reportData.solicitantInfo.enderecoLocalizacaoClienteSolicitante} onChange={(e) => handleSolicitantChange('enderecoLocalizacaoClienteSolicitante', e.target.value)} className={INPUT_CLASS} />
         </div>
         <div>
-          <label htmlFor="contatoResponsavelSolicitacao" className={LABEL_CLASS}>Contato/Responsável:</label>
+          <label htmlFor="contatoResponsavelSolicitacao" className={LABEL_CLASS}>Contato Responsável:</label>
           <input type="text" id="contatoResponsavelSolicitacao" value={reportData.solicitantInfo.contatoResponsavelSolicitacao} onChange={(e) => handleSolicitantChange('contatoResponsavelSolicitacao', e.target.value)} className={INPUT_CLASS} />
         </div>
       </div>
 
-      <h2 className="enhanced-section-title">3. INFORMAÇÕES DA AMOSTRA</h2>
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="enhanced-section-title">3. INFORMAÇÕES DA AMOSTRA</h2>
+        {hasSampleANP52Issues && (
+          <div className="flex items-center gap-1 px-3 py-1 bg-red-100 border border-red-300 rounded-full">
+            <span className="text-red-600 text-sm">⚠️</span>
+            <span className="text-red-700 text-xs font-medium">Prazo ANP 52/2013</span>
+          </div>
+        )}
+      </div>
+      
+      {hasSampleANP52Issues && (
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-400 rounded">
+          <div className="flex items-start">
+            <span className="text-red-500 mr-2">⚠️</span>
+            <div>
+              <p className="text-sm font-medium text-red-800">Alerta de Prazo ANP 52/2013</p>
+              <div className="mt-1 text-xs text-red-700">
+                {validations.anp52_prazoColetaEmissao.status === ValidationStatus.ForaDaFaixa && (
+                  <p>• Prazo entre coleta e emissão excedido</p>
+                )}
+                {validations.anp52_prazoColetaImplementacao.status === ValidationStatus.ForaDaFaixa && (
+                  <p>• Prazo total do processo excedido</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <label htmlFor="numeroAmostra" className={LABEL_CLASS}>Nº da Amostra:</label>
@@ -126,8 +175,36 @@ const DocumentAndSampleInfoForm: React.FC<DocumentAndSampleInfoFormProps> = ({ r
         </div>
       </div>
 
-      <h2 className="enhanced-section-title">4. DADOS DO BOLETIM</h2>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="enhanced-section-title">4. DADOS DO BOLETIM</h2>
+        {hasBulletinANP52Issues && (
+          <div className="flex items-center gap-1 px-3 py-1 bg-red-100 border border-red-300 rounded-full">
+            <span className="text-red-600 text-sm">⚠️</span>
+            <span className="text-red-700 text-xs font-medium">Prazo ANP 52/2013</span>
+          </div>
+        )}
+      </div>
+
+      {hasBulletinANP52Issues && (
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-400 rounded">
+          <div className="flex items-start">
+            <span className="text-red-500 mr-2">⚠️</span>
+            <div>
+              <p className="text-sm font-medium text-red-800">Alerta de Prazo ANP 52/2013</p>
+              <div className="mt-1 text-xs text-red-700">
+                {validations.anp52_prazoColetaEmissao.status === ValidationStatus.ForaDaFaixa && (
+                  <p>• Prazo entre coleta e emissão excedido (máx. 25 dias)</p>
+                )}
+                {validations.anp52_prazoColetaImplementacao.status === ValidationStatus.ForaDaFaixa && (
+                  <p>• Prazo total do processo excedido (máx. 26-28 dias)</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-3">
          <div>
           <label htmlFor="numeroBoletim" className={LABEL_CLASS}>Nº Boletim Analisado:</label>
           <input type="text" id="numeroBoletim" value={reportData.numeroBoletim} onChange={(e) => handleDirectChange('numeroBoletim', e.target.value)} className={INPUT_CLASS} />
@@ -173,6 +250,14 @@ const DocumentAndSampleInfoForm: React.FC<DocumentAndSampleInfoFormProps> = ({ r
           <input type="date" id="dataRecebimentoBoletimSolicitante" value={reportData.bulletinInfo.dataRecebimentoBoletimSolicitante} onChange={(e) => handleBulletinChange('dataRecebimentoBoletimSolicitante', e.target.value)} className={INPUT_CLASS} />
           <DateValidationMessage status={validations.seq_emissaoLab_recebSolic.status} message={validations.seq_emissaoLab_recebSolic.message} />
           <DateValidationMessage status={validations.seq_recebSolic_analiseCritica.status} message={validations.seq_recebSolic_analiseCritica.message} />
+        </div>
+        <div>
+          <label htmlFor="dataImplementacao" className={LABEL_CLASS}>Data Implementação:</label>
+          <input type="date" id="dataImplementacao" value={reportData.bulletinInfo.dataImplementacao} onChange={(e) => handleBulletinChange('dataImplementacao', e.target.value)} className={INPUT_CLASS} />
+          <DateValidationMessage status={validations.anp52_prazoColetaImplementacao.status} message={validations.anp52_prazoColetaImplementacao.message} />
+          <p className="mt-1 text-xs text-gray-600">
+            Data efetiva de implementação dos resultados na operação (ANP 52/2013)
+          </p>
         </div>
         <div>
           <label htmlFor="laboratorioEmissor" className={LABEL_CLASS}>Laboratório Emissor:</label>

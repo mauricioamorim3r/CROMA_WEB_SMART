@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import { ValidationStatus } from '../types';
 import StatusBadge from './ui/StatusBadge';
-import CEPHistoryViewer from './CEPHistoryViewer';
 
 interface CEPResult {
   componentName: string;
@@ -31,6 +30,7 @@ interface CEPValidationComponentProps {
   onRunCEPValidation: () => void;
   onAddCEPToHistory: () => void;
   onClearCEPHistory: () => void;
+  onShowCEPHistory: () => void; // Nova prop para abrir modal global
   cepHistoricalSamplesCount: number;
 }
 
@@ -47,7 +47,7 @@ const CEPValidationComponent: React.FC<CEPValidationComponentProps> = ({
   cepHistoricalSamplesCount
 }) => {
   const [showDetails, setShowDetails] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  // Removido showHistory - usando modal global do App.tsx
 
   // Atualizar status no componente pai
   React.useEffect(() => {
@@ -144,7 +144,11 @@ const CEPValidationComponent: React.FC<CEPValidationComponentProps> = ({
 
           <div className="flex gap-3 items-center">
             <button
-              onClick={() => setShowHistory(true)}
+              onClick={() => {
+                // Usar modal global do App.tsx
+                const event = new CustomEvent('openCEPHistoryModal');
+                window.dispatchEvent(event);
+              }}
               className="flex gap-2 items-center px-3 py-2 text-purple-600 rounded-lg border border-purple-300 hover:bg-purple-50"
             >
               📈 Ver Histórico
@@ -179,28 +183,28 @@ const CEPValidationComponent: React.FC<CEPValidationComponentProps> = ({
           </h4>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full bg-white table-with-relief">
+              <thead className="table-header-blue">
                 <tr>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-blue-400/50">
                     Parâmetro
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-blue-400/50">
                     Valor Atual
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-blue-400/50">
                     Média (x̄)
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-blue-400/50">
                     LCI
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-blue-400/50">
                     LCS
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase border-r border-blue-400/50">
                     Amostras
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase">
                     Status CEP
                   </th>
                 </tr>
@@ -251,11 +255,7 @@ const CEPValidationComponent: React.FC<CEPValidationComponentProps> = ({
         </div>
       )}
       
-      {/* Modal do Histórico CEP */}
-      <CEPHistoryViewer
-        isOpen={showHistory}
-        onClose={() => setShowHistory(false)}
-      />
+      {/* Modal do Histórico CEP - Removido para evitar duplicação com App.tsx */}
     </div>
   );
 };

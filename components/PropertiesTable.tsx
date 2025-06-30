@@ -20,8 +20,8 @@ const StandardPropertiesTable: React.FC<StandardPropertiesTableProps> = ({ prope
     <div className="p-4 mb-6 bg-white rounded-xl shadow-md">
       <h2 className="enhanced-section-title">6. PROPRIEDADES DO GÁS – CONDIÇÕES PADRÃO</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
+        <table className="min-w-full table-with-relief bg-white">
+          <thead className="table-header-blue">
             <tr>
               <th className={TABLE_TH_CLASS} rowSpan={2}>Propriedade</th>
               <th className={TABLE_TH_CLASS} rowSpan={2}>Valor</th>
@@ -107,7 +107,7 @@ const StandardPropertiesTable: React.FC<StandardPropertiesTableProps> = ({ prope
       {/* Legend for auto-calculated fields */}
       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
         <div className="flex items-center text-sm text-green-700">
-          <span className="mr-2">🔄</span>
+          <span className="mr-2">��</span>
           <span className="font-medium">Campos com Cálculo Automático:</span>
           <span className="ml-2">Peso Molecular, Densidade Relativa, Densidade Real, PCI</span>
         </div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { INPUT_CLASS } from '../constants';
 
@@ -9,8 +8,10 @@ interface ObservationsSectionProps {
 
 const ObservationsSection: React.FC<ObservationsSectionProps> = ({ observacoes, onObservacoesChange }) => {
   return (
-    <div className="p-4 mb-6 bg-white rounded-xl shadow-md">
-      <h2 className="enhanced-section-title">9. OBSERVAÇÕES (DO BOLETIM)</h2>
+    <div className="bg-white border border-gray-300 rounded-lg shadow-lg">
+      <div className="p-4 bg-blue-800 rounded-t-lg border-b border-gray-200">
+        <h2 className="enhanced-section-title">7. OBSERVAÇÕES (DO BOLETIM)</h2>
+      </div>
       <textarea
         rows={4}
         value={observacoes}

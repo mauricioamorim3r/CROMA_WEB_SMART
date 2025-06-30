@@ -5,7 +5,10 @@
  * Baseado nas diretrizes do AGA Report No. 8 e na estrutura atual da aplicação
  */
 
-import { ComponentData, ReportData } from './types';
+import { ComponentData, ReportData, ValidationStatus } from './types';
+import { determineGasQuality, GasQuality } from './src/utils/gas-quality-classifier';
+import { determineValidationMethod, ValidationMethod } from './src/utils/validation-method-selector';
+import { AGA8_PIPELINE_QUALITY_LIMITS, AGA8_INTERMEDIATE_QUALITY_LIMITS } from './src/constants/aga8-limits';
 
 export interface AGA8CriteriaLimits {
   pressao_max_kpa: number;
@@ -15,16 +18,21 @@ export interface AGA8CriteriaLimits {
 }
 
 export interface AGA8CriteriaResult {
-  modelo: 'DETAIL' | 'GROSS' | 'GERG-2008';
-  criterio: string;
-  motivosExcedidos: string[];
+  metodo: ValidationMethod;
+  gasQuality: GasQuality;
+  operationalRange: 'normal' | 'extended';
   isValid: boolean;
-  detalhes: {
-    pressaoStatus: boolean;
-    temperaturaStatus: boolean;
-    composicaoStatus: boolean;
-    metanoMinimo: boolean;
-  };
+  reason: string;
+  componentValidations: Array<{
+    component: string;
+    value: number;
+    status: ValidationStatus;
+    limits: string | null;
+    qualityType: string;
+  }>;
+  
+  criterio: string;
+  detalhes: string;
 }
 
 /**
@@ -83,89 +91,74 @@ export function obterLimitesCriterios(): Record<string, AGA8CriteriaLimits> {
   };
 }
 
-/**
- * Converte ComponentData para o formato esperado pela validação
- */
-function converterComposicaoParaValidacao(components: ComponentData[]): Record<string, number> {
-  const composicao: Record<string, number> = {};
-  
-  components.forEach(comp => {
-    const valor = parseFloat(comp.molarPercent) || 0;
-    if (valor > 0) {
-      composicao[comp.name] = valor / 100; // Converter % para fração
-    }
-  });
-  
-  return composicao;
-}
+
 
 /**
  * Função principal de seleção automática do critério AGA8
  * Integrada à estrutura existente da aplicação
  */
 export function escolherCriterioAGA8(
-  components: ComponentData[], 
-  temperatura_C: number, 
+  components: ComponentData[],
+  temperatura_C: number,
   pressao_kPa: number
 ): AGA8CriteriaResult {
   
-  const composicao = converterComposicaoParaValidacao(components);
-  const limites = obterLimitesCriterios();
+  // Converter temperatura para Kelvin
+  const temperatura_K = temperatura_C + 273.15;
   
-  // Verificar metano mínimo (requisito básico para todos os critérios)
-  const metano = composicao["Metano (C₁)"] || 0;
-  const metanoMinimo = metano >= 0.60; // 60% mínimo
+  // Determinar qualidade e método automaticamente
+  const gasQuality = determineGasQuality(components);
+  const validationCriteria = determineValidationMethod(components, temperatura_K, pressao_kPa);
   
-  // Verificar DETAIL
-  const detailExcedidos = verificarCriterio(limites["DETAIL"], composicao, temperatura_C, pressao_kPa);
+  // Verificar se cada componente está dentro dos limites
+  const componentValidations = components.map(component => {
+    let limits;
+    let qualityType;
+    
+    if (gasQuality === GasQuality.Pipeline) {
+      limits = (AGA8_PIPELINE_QUALITY_LIMITS as any)[component.name];
+      qualityType = 'Pipeline';
+    } else {
+      limits = (AGA8_INTERMEDIATE_QUALITY_LIMITS as any)[component.name];
+      qualityType = 'Intermediate';
+    }
+    
+    if (!limits) {
+      return {
+        component: component.name,
+        value: parseFloat(component.molarPercent),
+        status: 'OK' as ValidationStatus,
+        limits: null,
+        qualityType
+      };
+    }
+    
+    const value = parseFloat(component.molarPercent);
+    const isValid = value >= limits.min && value <= limits.max;
+    
+    return {
+      component: component.name,
+      value,
+      status: isValid ? 'OK' as ValidationStatus : 'Fora da Faixa' as ValidationStatus,
+      limits: `${limits.min} - ${limits.max}%`,
+      qualityType
+    };
+  });
   
-  // Verificar GROSS
-  const grossExcedidos = verificarCriterio(limites["GROSS"], composicao, temperatura_C, pressao_kPa);
-  
-  // Lógica de seleção baseada nos resultados
-  if (!metanoMinimo) {
-    return criarResultado('GERG-2008', 'GERG-2008 (Metano < 60%)', ['Metano abaixo do mínimo de 60% molar'], false, temperatura_C, pressao_kPa, 70000, metanoMinimo);
-  }
-  
-  if (detailExcedidos.length === 0) {
-    return criarResultado('DETAIL', 'AGA-8 DETAIL (Range A)', [], true, temperatura_C, pressao_kPa, 10342, metanoMinimo);
-  } else if (grossExcedidos.length === 0) {
-    return criarResultado('GROSS', 'AGA-8 GROSS Method', detailExcedidos, true, temperatura_C, pressao_kPa, 20684, metanoMinimo);
-  } else {
-    const todosMotivos = [...new Set([...detailExcedidos, ...grossExcedidos])];
-    return criarResultado('GERG-2008', 'GERG-2008 (Fora dos limites AGA-8)', todosMotivos, false, temperatura_C, pressao_kPa, 70000, metanoMinimo);
-  }
+  return {
+    metodo: validationCriteria.method,
+    gasQuality: gasQuality,
+    operationalRange: validationCriteria.operationalRange,
+    isValid: validationCriteria.isValid,
+    reason: validationCriteria.reason,
+    componentValidations,
+    
+    criterio: validationCriteria.method,
+    detalhes: validationCriteria.reason
+  };
 }
 
-/**
- * Verifica se uma composição atende aos critérios de um modelo específico
- */
-function verificarCriterio(
-  limites: AGA8CriteriaLimits,
-  composicao: Record<string, number>,
-  temperatura_C: number,
-  pressao_kPa: number
-): string[] {
-  
-  const excedidos: string[] = [];
-  
-  // Verificar condições de processo
-  if (temperatura_C < limites.temperatura_min_C || 
-      temperatura_C > limites.temperatura_max_C || 
-      pressao_kPa > limites.pressao_max_kpa) {
-    excedidos.push("condições de processo");
-  }
-  
-  // Verificar limites de composição
-  for (const [componente, limite] of Object.entries(limites.componentes)) {
-    const valor = composicao[componente] || 0;
-    if (valor > limite) {
-      excedidos.push(componente);
-    }
-  }
-  
-  return excedidos;
-}
+
 
 /**
  * Integração com o sistema existente de validação AGA8
@@ -198,12 +191,12 @@ export function atualizarValidacaoAGA8Automatica(reportData: ReportData): Partia
  * Funções auxiliares para gerar descrições dos campos
  */
 function gerarDescricaoFaixaPressao(resultado: AGA8CriteriaResult): string {
-  switch (resultado.modelo) {
-    case 'DETAIL':
+  switch (resultado.metodo) {
+    case ValidationMethod.AGA8_DETAIL:
       return '0 a 10.3 MPa (AGA-8 DETAIL)';
-    case 'GROSS':
+    case ValidationMethod.AGA8_GROSS:
       return '0 a 20.7 MPa (AGA-8 GROSS)';
-    case 'GERG-2008':
+    case ValidationMethod.GERG2008:
       return '0 a 70 MPa (GERG-2008)';
     default:
       return '0 a 70 MPa (Padrão)';
@@ -211,11 +204,11 @@ function gerarDescricaoFaixaPressao(resultado: AGA8CriteriaResult): string {
 }
 
 function gerarDescricaoFaixaTemperatura(resultado: AGA8CriteriaResult): string {
-  switch (resultado.modelo) {
-    case 'DETAIL':
-    case 'GROSS':
+  switch (resultado.metodo) {
+    case ValidationMethod.AGA8_DETAIL:
+    case ValidationMethod.AGA8_GROSS:
       return '-4°C a 62°C (AGA-8)';
-    case 'GERG-2008':
+    case ValidationMethod.GERG2008:
       return '-160°C a 200°C (GERG-2008)';
     default:
       return '-30°C a 150°C (Padrão)';
@@ -230,11 +223,11 @@ function gerarDescricaoMetodoZ(resultado: AGA8CriteriaResult, reportData: Report
   const pcs = parseFloat(reportData.standardProperties.find(p => p.id === 'pcs')?.value || '0');
   const densidade = parseFloat(reportData.standardProperties.find(p => p.id === 'relativeDensity')?.value || '0');
   
-  if (resultado.modelo === 'DETAIL' && temComposicaoCompleta) {
+  if (resultado.metodo === ValidationMethod.AGA8_DETAIL && temComposicaoCompleta) {
     return 'Detalhado (AGA-8 DETAIL)';
-  } else if (resultado.modelo === 'GROSS' || (pcs > 0 && densidade > 0)) {
+  } else if (resultado.metodo === ValidationMethod.AGA8_GROSS || (pcs > 0 && densidade > 0)) {
     return 'Gross Method (AGA-8 GROSS)';
-  } else if (resultado.modelo === 'GERG-2008') {
+  } else if (resultado.metodo === ValidationMethod.GERG2008) {
     return 'GERG-2008 (Fora dos limites AGA-8)';
   } else {
     return 'N/A (Dados Insuficientes)';
@@ -252,12 +245,12 @@ export function logSelecaoCriterio(
   const resultado = escolherCriterioAGA8(composicao, temperatura, pressao);
   
   console.group('🔍 Seleção Automática de Critério AGA8');
-  console.log('📊 Modelo Selecionado:', resultado.modelo);
+  console.log('📊 Modelo Selecionado:', resultado.metodo);
   console.log('📋 Critério:', resultado.criterio);
   console.log('✅ Válido:', resultado.isValid);
   
-  if (resultado.motivosExcedidos.length > 0) {
-    console.log('⚠️ Motivos para não usar DETAIL/GROSS:', resultado.motivosExcedidos);
+  if (resultado.componentValidations.length > 0) {
+    console.log('⚠️ Componentes fora dos limites:', resultado.componentValidations.filter(c => c.status === 'Fora da Faixa').map(c => c.component));
   }
   
   console.log('🌡️ Temperatura:', temperatura, '°C');
@@ -266,26 +259,4 @@ export function logSelecaoCriterio(
   console.groupEnd();
 }
 
-function criarResultado(
-  modelo: 'DETAIL' | 'GROSS' | 'GERG-2008',
-  criterio: string,
-  motivos: string[],
-  isValid: boolean,
-  temperatura: number,
-  pressao: number,
-  pressaoMax: number,
-  metanoMinimo: boolean
-): AGA8CriteriaResult {
-  return {
-    modelo,
-    criterio,
-    motivosExcedidos: motivos,
-    isValid,
-    detalhes: {
-      pressaoStatus: pressao <= pressaoMax,
-      temperaturaStatus: temperatura >= -4 && temperatura <= 62,
-      composicaoStatus: isValid,
-      metanoMinimo
-    }
-  };
-} 
+ 

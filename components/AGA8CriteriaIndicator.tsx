@@ -14,8 +14,6 @@ const AGA8CriteriaIndicator: React.FC<AGA8CriteriaIndicatorProps> = ({
   
   const criteriaInfo = useMemo(() => {
     try {
-      // escolherCriterioAGA8 já importado no topo
-      
       const temperatura = parseFloat(reportData.sampleInfo?.temperaturaAmostraC || '20');
       const pressao = parseFloat(reportData.sampleInfo?.pressaoAmostraAbsolutaKpaA || '0');
       
@@ -30,19 +28,19 @@ const AGA8CriteriaIndicator: React.FC<AGA8CriteriaIndicatorProps> = ({
     return null;
   }
 
-  const getModeloColor = (modelo: string) => {
-    switch (modelo) {
-      case 'DETAIL': return 'bg-green-100 border-green-300 text-green-800';
-      case 'GROSS': return 'bg-yellow-100 border-yellow-300 text-yellow-800';
+  const getMetodoColor = (metodo: string) => {
+    switch (metodo) {
+      case 'AGA-8 DETAIL': return 'bg-green-100 border-green-300 text-green-800';
+      case 'AGA-8 GROSS': return 'bg-yellow-100 border-yellow-300 text-yellow-800';
       case 'GERG-2008': return 'bg-blue-100 border-blue-300 text-blue-800';
       default: return 'bg-gray-100 border-gray-300 text-gray-800';
     }
   };
 
-  const getModeloIcon = (modelo: string) => {
-    switch (modelo) {
-      case 'DETAIL': return '🎯';
-      case 'GROSS': return '📊';
+  const getMetodoIcon = (metodo: string) => {
+    switch (metodo) {
+      case 'AGA-8 DETAIL': return '🎯';
+      case 'AGA-8 GROSS': return '📊';
       case 'GERG-2008': return '🔬';
       default: return '❓';
     }
@@ -56,70 +54,66 @@ const AGA8CriteriaIndicator: React.FC<AGA8CriteriaIndicatorProps> = ({
     <div className="p-4 mt-4 bg-gray-50 rounded-lg border border-gray-200">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <span className="text-2xl">{getModeloIcon(criteriaInfo.modelo)}</span>
+          <span className="text-2xl">{getMetodoIcon(criteriaInfo.metodo)}</span>
           <div>
             <h4 className="font-semibold text-gray-900">
-              Modelo Recomendado: {criteriaInfo.modelo}
+              Método Recomendado: {criteriaInfo.metodo}
             </h4>
             <p className="text-sm text-gray-600">{criteriaInfo.criterio}</p>
           </div>
         </div>
         
-        <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getModeloColor(criteriaInfo.modelo)}`}>
+        <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getMetodoColor(criteriaInfo.metodo)}`}>
           {getStatusIcon(criteriaInfo.isValid)} {criteriaInfo.isValid ? 'Válido' : 'Limitações'}
         </div>
       </div>
 
       {showDetails && (
         <div className="mt-4 space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-            <div className="flex items-center space-x-2">
-              <span className={criteriaInfo.detalhes.pressaoStatus ? 'text-green-600' : 'text-red-600'}>
-                {criteriaInfo.detalhes.pressaoStatus ? '✅' : '❌'}
-              </span>
-              <span>Pressão</span>
+          {/* Mostrar qualidade do gás */}
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-blue-800">Qualidade do Gás:</span>
+              <span className="text-blue-700">{criteriaInfo.gasQuality}</span>
             </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className={criteriaInfo.detalhes.temperaturaStatus ? 'text-green-600' : 'text-red-600'}>
-                {criteriaInfo.detalhes.temperaturaStatus ? '✅' : '❌'}
-              </span>
-              <span>Temperatura</span>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className={criteriaInfo.detalhes.composicaoStatus ? 'text-green-600' : 'text-red-600'}>
-                {criteriaInfo.detalhes.composicaoStatus ? '✅' : '❌'}
-              </span>
-              <span>Composição</span>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className={criteriaInfo.detalhes.metanoMinimo ? 'text-green-600' : 'text-red-600'}>
-                {criteriaInfo.detalhes.metanoMinimo ? '✅' : '❌'}
-              </span>
-              <span>Metano ≥ 60%</span>
+            <div className="flex items-center justify-between mt-1">
+              <span className="font-medium text-blue-800">Faixa Operacional:</span>
+              <span className="text-blue-700 capitalize">{criteriaInfo.operationalRange}</span>
             </div>
           </div>
 
-          {criteriaInfo.motivosExcedidos.length > 0 && (
+          {/* Validações de componentes */}
+          {criteriaInfo.componentValidations.length > 0 && (
+            <div className="space-y-2">
+              <h5 className="font-medium text-gray-800">Validação de Componentes:</h5>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                {criteriaInfo.componentValidations.slice(0, 6).map((validation, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                    <span className="text-sm">{validation.component.replace(/\(.*\)/, '').trim()}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`text-xs ${validation.status === 'OK' ? 'text-green-600' : 'text-red-600'}`}>
+                        {validation.status === 'OK' ? '✅' : '❌'}
+                      </span>
+                      <span className="text-xs text-gray-500">{validation.value.toFixed(2)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Detalhes e motivos */}
+          {!criteriaInfo.isValid && (
             <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
               <h5 className="mb-2 font-medium text-yellow-800">
-                ⚠️ Limitações para modelos AGA-8:
+                ⚠️ Limitações Identificadas:
               </h5>
-                             <ul className="space-y-1 text-sm text-yellow-700">
-                {criteriaInfo.motivosExcedidos.map((motivo: string, index: number) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <span>•</span>
-                    <span>{motivo}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-sm text-yellow-700">{criteriaInfo.reason}</p>
             </div>
           )}
 
           <div className="pt-2 text-xs text-gray-500 border-t">
-            💡 O modelo é selecionado automaticamente baseado na composição, pressão e temperatura da amostra, 
+            💡 O método é selecionado automaticamente baseado na composição, pressão e temperatura da amostra, 
             seguindo as diretrizes do AGA Report No. 8.
           </div>
         </div>

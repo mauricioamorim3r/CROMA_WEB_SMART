@@ -22,6 +22,19 @@ export enum ProcessType {
   ProcessoSemValidacao = 'PROCESSO SEM VALIDAÇÃO'
 }
 
+// ✅ NOVOS TIPOS - Novos tipos para classificação
+export enum GasQuality {
+  Pipeline = 'Pipeline Quality',
+  Intermediate = 'Intermediate Quality',
+  OutOfSpecification = 'Out of Specification'
+}
+
+export enum ValidationMethod {
+  AGA8_DETAIL = 'AGA-8 DETAIL',
+  AGA8_GROSS = 'AGA-8 GROSS',
+  GERG2008 = 'GERG-2008'
+}
+
 export interface ComponentData {
   id: number;
   name: string;
@@ -90,6 +103,7 @@ export interface BulletinInfo {
   dataAnaliseLaboratorial: string; // date
   dataEmissaoBoletim: string; // date - existing
   dataRecebimentoBoletimSolicitante: string; //date
+  dataImplementacao: string; // date - NEW: Data efetiva de implementação dos resultados
   laboratorioEmissor: string;
   equipamentoCromatografoUtilizado: string;
   metodoNormativo: string;
@@ -197,6 +211,19 @@ export interface ReportData {
   // Parte 1 - Observações (do boletim)
   observacoesBoletim: string; // Renamed from observacoesComplementares for clarity
 
+  // ✅ NOVOS CAMPOS - Adicionando novos campos de qualidade
+  gasQuality?: GasQuality;
+  validationMethod?: ValidationMethod; 
+  operationalRange?: 'normal' | 'extended';
+  qualityValidationDetails?: {
+    pipelineCompliant: boolean;
+    intermediateCompliant: boolean;
+    violations: {
+      pipeline: string[];
+      intermediate: string[];
+    };
+  };
+
   // Parte 2 – Validação Técnica e Metrológica
   aga8ValidationData: Aga8ValidationData;
   regulatoryComplianceItems: RegulatoryComplianceItem[];
@@ -220,3 +247,90 @@ export interface ReportData {
   aprovacaoAnaliseNome: string; // was aprovadoPor
   aprovacaoAnaliseData: string; // was aprovadoEm
 }
+
+// ✅ INTERFACE CEP EXPANDIDA - Conforme Excel mostrado nas imagens
+export interface CEPHistoricalSample {
+  id: string;
+  boletimNumber: string;
+  
+  // Datas principais
+  dataColeta: string;           // Data da Coleta
+  dataEmissaoRelatorio: string; // Data da Emissão do Relatório  
+  dataValidacao: string;        // Data da Validação
+  
+  // Componentes do gás (% mol)
+  components: {
+    'Metano (C₁)': number;
+    'Etano (C₂)': number;
+    'Propano (C₃)': number;
+    'i-Butano (iC₄)': number;
+    'n-Butano (nC₄)': number;
+    'i-Pentano (iC₅)': number;
+    'n-Pentano (nC₅)': number;
+    'Hexano (C₆)': number;
+    'Heptano (C₇)': number;
+    'Octano (C₈)': number;
+    'Nonano (C₉)': number;
+    'Decano (C₁₀)': number;
+    'Oxigênio (O₂)': number;
+    'Nitrogênio (N₂)': number;
+    'Dióxido de Carbono (CO₂)': number;
+  };
+  
+  // Total da composição
+  totalComposicao: number;
+  
+  // Propriedades calculadas
+  properties: {
+    fatorCompressibilidade: number;  // Fator de Compressibilidade
+    massaEspecifica: number;         // Massa Específica
+    massaMolecular: number;          // Massa Molecular
+    condicaoReferencia: string;      // Condição de Referência (20°C/1 atm)
+  };
+  
+  // Histórico de edições
+  editHistory?: {
+    date: string;
+    reason: string;
+    changedFields: string[];
+    previousValues: { [key: string]: number | string };
+  }[];
+}
+
+// ✅ MAPEAMENTO DE COLUNAS CEP - Para exibição e exportação
+export const CEP_COLUMNS_CONFIG = {
+  dates: [
+    { key: 'dataColeta', label: 'Data da Coleta' },
+    { key: 'dataEmissaoRelatorio', label: 'Data da Emissão do Relatório' },
+    { key: 'dataValidacao', label: 'Data da Validação' }
+  ],
+  metadata: [
+    { key: 'boletimNumber', label: 'Boletim' }
+  ],
+  components: [
+    { key: 'Metano (C₁)', label: 'Metano' },
+    { key: 'Etano (C₂)', label: 'Etano' },
+    { key: 'Propano (C₃)', label: 'Propano' },
+    { key: 'i-Butano (iC₄)', label: 'Isobutano' },
+    { key: 'n-Butano (nC₄)', label: 'n-Butano' },
+    { key: 'i-Pentano (iC₅)', label: 'Isopentano' },
+    { key: 'n-Pentano (nC₅)', label: 'N-Pentano' },
+    { key: 'Hexano (C₆)', label: 'Hexano' },
+    { key: 'Heptano (C₇)', label: 'Heptano' },
+    { key: 'Octano (C₈)', label: 'Octano' },
+    { key: 'Nonano (C₉)', label: 'Nonano' },
+    { key: 'Decano (C₁₀)', label: 'Decano' },
+    { key: 'Oxigênio (O₂)', label: 'Oxigênio' },
+    { key: 'Nitrogênio (N₂)', label: 'Nitrogênio' },
+    { key: 'Dióxido de Carbono (CO₂)', label: 'Dióxido de Carbono' }
+  ],
+  totals: [
+    { key: 'totalComposicao', label: 'TOTAL' }
+  ],
+  properties: [
+    { key: 'fatorCompressibilidade', label: 'Fator de Compressibilidade' },
+    { key: 'massaEspecifica', label: 'Massa Específica' },
+    { key: 'massaMolecular', label: 'Massa Molecular' },
+    { key: 'condicaoReferencia', label: 'Condição de Referência (20°C/1 atm)' }
+  ]
+} as const;

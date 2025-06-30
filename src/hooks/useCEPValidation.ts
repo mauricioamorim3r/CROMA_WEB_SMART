@@ -1,208 +1,282 @@
 /**
- * Hook Simplificado para Validação CEP
- * Baseado no material de referência, mas otimizado para integração rápida
+ * Hook Otimizado para Validação CEP
+ * Interface compatível com App.tsx - incluindo validação de múltiplos componentes e propriedades
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ComponentData, SampleProperty, ValidationStatus } from '../../types';
+import { CEPHistoricalSample } from '../../types';
 
-interface CEPStatistics {
-  mean: number;
-  lowerControlLimit: number;
-  upperControlLimit: number;
-  sampleCount: number;
-}
-
-interface CEPValidationResult {
+interface CEPComponentResult {
   componentName: string;
-  currentValue: number;
-  statistics: CEPStatistics;
   status: ValidationStatus;
+  currentValue: number;
+  statistics: {
+    mean: number;
+    lowerControlLimit: number;
+    upperControlLimit: number;
+    sampleCount: number;
+    standardDeviation: number;
+  };
+  violations: string[];
 }
 
-interface CEPHistoricalSample {
-  id: string;
-  boletimNumber: string;
-  date: string;
-  components: Record<string, number>;
-  properties: Record<string, number>;
+interface CEPPropertyResult {
+  componentName: string;
+  status: ValidationStatus;
+  currentValue: number;
+  statistics: {
+    mean: number;
+    lowerControlLimit: number;
+    upperControlLimit: number;
+    sampleCount: number;
+    standardDeviation: number;
+  };
+  violations: string[];
 }
-
-const CEP_STORAGE_KEY = 'cep_historical_samples';
-const MAX_SAMPLES = 8; // Últimas 8 amostras para cálculo
-const D2_FACTOR = 1.128; // Fator para n=2 observações
-
-// Função para normalizar valores de entrada (lida com vírgula e ponto decimal)
-const normalizeNumericValue = (value: string | number): number => {
-  if (typeof value === 'number') return value;
-  if (typeof value !== 'string') return 0;
-  
-  // Substituir vírgula por ponto e remover espaços
-  const normalized = value.replace(',', '.').trim();
-  const parsed = parseFloat(normalized);
-  
-  return isNaN(parsed) ? 0 : parsed;
-};
-
-// Componentes monitorados (principais do gás natural)
-const MONITORED_COMPONENTS = [
-  'Metano (C₁)', 'Etano (C₂)', 'Propano (C₃)', 'i-Butano (iC₄)', 'n-Butano (nC₄)',
-  'Dióxido de Carbono (CO₂)', 'Nitrogênio (N₂)'
-];
 
 export const useCEPValidation = (
-  components: ComponentData[],
-  properties: SampleProperty[],
+  components: ComponentData[], 
+  properties: SampleProperty[], 
   boletimNumber: string
 ) => {
-  const [componentResults, setComponentResults] = useState<CEPValidationResult[]>([]);
-  const [propertyResults, setPropertyResults] = useState<CEPValidationResult[]>([]);
+  // ============================================================================
+  // CONFIGURAÇÕES CEP - JANELA DESLIZANTE DINÂMICA
+  // ============================================================================
+  const CEP_STORAGE_KEY = 'cep_historical_samples';
+  const CEP_MAX_HISTORY = 20;        // Total de amostras armazenadas (backup)
+  const CEP_CALCULATION_WINDOW = 8;  // Amostras usadas no cálculo CEP (janela deslizante)
+  
+  // ⚠️  IMPORTANTE: A cada nova amostra salva:
+  // - Nova amostra entra na posição [0] (mais recente)
+  // - Apenas as primeiras 8 amostras [0-7] são usadas no cálculo CEP
+  // - Amostra mais antiga (posição [8+]) sai da janela de cálculo 
+  // - Estatísticas CEP (LCI/LCS) são recalculadas automaticamente
+  // ============================================================================
+
+  const [componentResults, setComponentResults] = useState<CEPComponentResult[]>([]);
+  const [propertyResults, setPropertyResults] = useState<CEPPropertyResult[]>([]);
   const [overallStatus, setOverallStatus] = useState<ValidationStatus>(ValidationStatus.Pendente);
   const [isValidating, setIsValidating] = useState(false);
 
-  // Carregar histórico do localStorage
-  const loadHistoricalData = useCallback((): CEPHistoricalSample[] => {
+  // Função para obter amostras históricas
+  const getHistoricalSamples = useCallback((): CEPHistoricalSample[] => {
     try {
       const stored = localStorage.getItem(CEP_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
+      if (!stored) return [];
+      
+      const samples = JSON.parse(stored) as CEPHistoricalSample[];
+      return samples.sort((a, b) => 
+        new Date(b.dataValidacao).getTime() - new Date(a.dataValidacao).getTime()
+      );
+    } catch (error) {
+      console.error('Erro ao carregar histórico CEP:', error);
       return [];
     }
   }, []);
 
-  // Salvar no histórico
-  const saveToHistory = useCallback((newSample: CEPHistoricalSample) => {
+  // Função para salvar nova amostra no histórico (JANELA DESLIZANTE)
+  const saveHistoricalSample = useCallback((sample: CEPHistoricalSample): void => {
     try {
-      const existing = loadHistoricalData();
-      const updated = [newSample, ...existing].slice(0, MAX_SAMPLES * 2); // Manter mais para rotatividade
+      const existing = getHistoricalSamples();
+      // 🔄 LÓGICA DINÂMICA: Nova amostra entra em [0], mantém backup de 20
+      const updated = [sample, ...existing.slice(0, CEP_MAX_HISTORY - 1)];
       localStorage.setItem(CEP_STORAGE_KEY, JSON.stringify(updated));
+      
+      console.log(`📊 CEP: Nova amostra adicionada. Total: ${updated.length}, Janela cálculo: ${Math.min(updated.length, CEP_CALCULATION_WINDOW)}`);
     } catch (error) {
-      console.warn('Erro ao salvar histórico CEP:', error);
+      console.error('Erro ao salvar amostra CEP:', error);
     }
-  }, [loadHistoricalData]);
+  }, [getHistoricalSamples]);
 
-  // Calcular estatísticas CEP
-  const calculateCEPStatistics = useCallback((historicalValues: number[]): CEPStatistics => {
+  // Mapear nome químico para nome do componente
+  const mapComponentName = useCallback((componentName: string): string => {
+    const mapping: Record<string, string> = {
+      'CH4': 'Metano (C₁)',
+      'C2H6': 'Etano (C₂)', 
+      'C3H8': 'Propano (C₃)',
+      'iC4H10': 'i-Butano (iC₄)',
+      'nC4H10': 'n-Butano (nC₄)',
+      'iC5H12': 'i-Pentano (iC₅)',
+      'nC5H12': 'n-Pentano (nC₅)',
+      'C6H14': 'Hexano (C₆)',
+      'C7H16': 'Heptano (C₇)',
+      'C8H18': 'Octano (C₈)',
+      'C9H20': 'Nonano (C₉)',
+      'C10H22': 'Decano (C₁₀)',
+      'O2': 'Oxigênio (O₂)',
+      'N2': 'Nitrogênio (N₂)',
+      'CO2': 'Dióxido de Carbono (CO₂)'
+    };
+    return mapping[componentName] || componentName;
+  }, []);
+
+  // Mapear nome da propriedade
+  const mapPropertyName = useCallback((propertyName: string): string => {
+    const mapping: Record<string, string> = {
+      'compressibilityFactor': 'Fator de Compressibilidade',
+      'relativeDensity': 'Massa Específica',
+      'molarMass': 'Massa Molecular'
+    };
+    return mapping[propertyName] || propertyName;
+  }, []);
+
+  // Calcular estatísticas CEP para um componente/propriedade
+  const calculateCEPStatistics = useCallback((
+    currentValue: number,
+    historicalValues: number[]
+  ) => {
     if (historicalValues.length < 2) {
       return {
-        mean: 0,
+        mean: currentValue,
         lowerControlLimit: 0,
-        upperControlLimit: 0,
-        sampleCount: 0
+        upperControlLimit: currentValue * 2,
+        sampleCount: 1,
+        standardDeviation: 0,
+        status: ValidationStatus.Pendente as ValidationStatus,
+        violations: ['Dados insuficientes para CEP (mínimo 2 amostras)']
       };
     }
 
-    // Pegar últimas 8 amostras e garantir que estão em formato percentual (0-100)
-    const recentValues = historicalValues.slice(0, MAX_SAMPLES).map(val => {
-      // Se valor está entre 0-1, converter para percentual
-      return val < 1 ? val * 100 : val;
-    });
-    
-    const mean = recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length;
+    // Calcular média
+    const allValues = [currentValue, ...historicalValues];
+    const mean = allValues.reduce((sum, val) => sum + val, 0) / allValues.length;
 
     // Calcular amplitudes móveis
     const mobileRanges: number[] = [];
-    for (let i = 1; i < recentValues.length; i++) {
-      mobileRanges.push(Math.abs(recentValues[i] - recentValues[i - 1]));
+    for (let i = 1; i < allValues.length; i++) {
+      mobileRanges.push(Math.abs(allValues[i] - allValues[i - 1]));
     }
 
     const mobileRangeMean = mobileRanges.length > 0 
       ? mobileRanges.reduce((sum, range) => sum + range, 0) / mobileRanges.length 
       : 0;
 
-    // Limites de controle: LCS = x̄ + 3(MR̄/d₂), LCI = x̄ - 3(MR̄/d₂)
-    const controlFactor = 3 * (mobileRangeMean / D2_FACTOR);
+    // Limites de controle (método amplitude móvel)
+    const controlFactor = 3 * (mobileRangeMean / 1.128);
     const upperControlLimit = mean + controlFactor;
     const lowerControlLimit = Math.max(0, mean - controlFactor);
 
+    // Verificar status
+    const violations: string[] = [];
+    let status: ValidationStatus;
+
+    if (currentValue < lowerControlLimit) {
+      violations.push(`Valor ${currentValue.toFixed(4)} abaixo do LCI ${lowerControlLimit.toFixed(4)}`);
+      status = ValidationStatus.ForaDaFaixa;
+    } else if (currentValue > upperControlLimit) {
+      violations.push(`Valor ${currentValue.toFixed(4)} acima do LCS ${upperControlLimit.toFixed(4)}`);
+      status = ValidationStatus.ForaDaFaixa;
+         } else {
+       status = ValidationStatus.OK;
+     }
+
     return {
-      mean,
-      lowerControlLimit,
-      upperControlLimit,
-      sampleCount: recentValues.length
+      mean: Number(mean.toFixed(4)),
+      lowerControlLimit: Number(lowerControlLimit.toFixed(4)),
+      upperControlLimit: Number(upperControlLimit.toFixed(4)),
+      sampleCount: allValues.length,
+      standardDeviation: Number(mobileRangeMean.toFixed(4)),
+      status,
+      violations
     };
   }, []);
 
-  // Validar componente individual
-  const validateComponent = useCallback((component: ComponentData): CEPValidationResult => {
-    const historicalData = loadHistoricalData();
-    const historicalValues = historicalData
-      .map(sample => sample.components[component.name])
-      .filter(val => val !== undefined && val > 0);
-
-    const currentValue = normalizeNumericValue(component.molarPercent);
-    const statistics = calculateCEPStatistics(historicalValues);
-
-    let status = ValidationStatus.Pendente;
-    if (statistics.sampleCount >= 2 && currentValue > 0) {
-      const withinLimits = currentValue >= statistics.lowerControlLimit && 
-                          currentValue <= statistics.upperControlLimit;
-      status = withinLimits ? ValidationStatus.OK : ValidationStatus.ForaDaFaixa;
-    }
-
-    return {
-      componentName: component.name,
-      currentValue,
-      statistics,
-      status
-    };
-  }, [loadHistoricalData, calculateCEPStatistics]);
-
-  // Validar propriedade individual
-  const validateProperty = useCallback((property: SampleProperty): CEPValidationResult => {
-    const historicalData = loadHistoricalData();
-    const historicalValues = historicalData
-      .map(sample => sample.properties[property.id])
-      .filter(val => val !== undefined && val > 0);
-
-    const currentValue = parseFloat(property.value) || 0;
-    const statistics = calculateCEPStatistics(historicalValues);
-
-    let status = ValidationStatus.Pendente;
-    if (statistics.sampleCount >= 2) {
-      const withinLimits = currentValue >= statistics.lowerControlLimit && 
-                          currentValue <= statistics.upperControlLimit;
-      status = withinLimits ? ValidationStatus.OK : ValidationStatus.ForaDaFaixa;
-    }
-
-    return {
-      componentName: property.name,
-      currentValue,
-      statistics,
-      status
-    };
-  }, [loadHistoricalData, calculateCEPStatistics]);
-
-  // Executar validação completa
-  const runValidation = useCallback(async () => {
+  // Validação CEP principal
+  const runValidation = useCallback(() => {
     setIsValidating(true);
-    
+
     try {
-      // Validar componentes monitorados
-      const compResults = components
-        .filter(comp => MONITORED_COMPONENTS.includes(comp.name))
-        .map(validateComponent);
-      setComponentResults(compResults);
+      const historicalSamples = getHistoricalSamples();
 
-      // Validar propriedades principais (fator compressibilidade, massa específica, massa molar)
-      const mainProperties = properties.filter(prop => 
-        ['compressibilityFactor', 'specificMass', 'molarMass'].includes(prop.id)
-      );
-      const propResults = mainProperties.map(validateProperty);
-      setPropertyResults(propResults);
+      // Validar componentes
+      const newComponentResults: CEPComponentResult[] = [];
+      for (const component of components) {
+        const currentValue = parseFloat(component.molarPercent) || 0;
+        if (currentValue > 0) {
+          const mappedName = mapComponentName(component.name);
+          
+          // Buscar valores históricos (JANELA DESLIZANTE)
+          const historicalValues = historicalSamples
+            .map(sample => (sample.components as any)[mappedName])
+            .filter(val => val > 0)
+            .slice(0, CEP_CALCULATION_WINDOW); // Últimas N amostras da janela
+          
+          const stats = calculateCEPStatistics(currentValue, historicalValues);
+          
+          newComponentResults.push({
+            componentName: component.name,
+            status: stats.status,
+            currentValue,
+            statistics: {
+              mean: stats.mean,
+              lowerControlLimit: stats.lowerControlLimit,
+              upperControlLimit: stats.upperControlLimit,
+              sampleCount: stats.sampleCount,
+              standardDeviation: stats.standardDeviation
+            },
+            violations: stats.violations
+          });
+        }
+      }
 
-      // Determinar status geral
-      const allResults = [...compResults, ...propResults];
-      const hasOutOfLimits = allResults.some(r => r.status === ValidationStatus.ForaDaFaixa);
-      const hasPending = allResults.some(r => r.status === ValidationStatus.Pendente);
+      // Validar propriedades
+      const newPropertyResults: CEPPropertyResult[] = [];
+      for (const property of properties) {
+        const currentValue = parseFloat(property.value) || 0;
+        if (currentValue > 0) {
+          const mappedName = mapPropertyName(property.id);
+          
+          // Buscar valores históricos (JANELA DESLIZANTE)
+          const historicalValues = historicalSamples
+            .map(sample => {
+              switch (property.id) {
+                case 'compressibilityFactor':
+                  return sample.properties.fatorCompressibilidade;
+                case 'relativeDensity':
+                  return sample.properties.massaEspecifica;
+                case 'molarMass':
+                  return sample.properties.massaMolecular;
+                default:
+                  return 0;
+              }
+            })
+            .filter(val => val > 0)
+            .slice(0, CEP_CALCULATION_WINDOW); // Últimas N amostras da janela
+          
+          const stats = calculateCEPStatistics(currentValue, historicalValues);
+          
+          newPropertyResults.push({
+            componentName: mappedName,
+            status: stats.status,
+            currentValue,
+            statistics: {
+              mean: stats.mean,
+              lowerControlLimit: stats.lowerControlLimit,
+              upperControlLimit: stats.upperControlLimit,
+              sampleCount: stats.sampleCount,
+              standardDeviation: stats.standardDeviation
+            },
+            violations: stats.violations
+          });
+        }
+      }
 
-      if (hasOutOfLimits) {
+      setComponentResults(newComponentResults);
+      setPropertyResults(newPropertyResults);
+
+      // Calcular status geral
+      const allResults = [...newComponentResults, ...newPropertyResults];
+      const hasViolations = allResults.some(result => result.status === ValidationStatus.ForaDaFaixa);
+      const hasPending = allResults.some(result => result.status === ValidationStatus.Pendente);
+      
+      if (hasViolations) {
         setOverallStatus(ValidationStatus.ForaDaFaixa);
       } else if (hasPending) {
         setOverallStatus(ValidationStatus.Pendente);
-      } else {
-        setOverallStatus(ValidationStatus.OK);
-      }
+             } else {
+         setOverallStatus(ValidationStatus.OK);
+       }
 
     } catch (error) {
       console.error('Erro na validação CEP:', error);
@@ -210,28 +284,54 @@ export const useCEPValidation = (
     } finally {
       setIsValidating(false);
     }
-  }, [components, properties, validateComponent, validateProperty]);
+  }, [components, properties, getHistoricalSamples, mapComponentName, mapPropertyName, calculateCEPStatistics]);
 
   // Adicionar amostra atual ao histórico
   const addCurrentSampleToHistory = useCallback(() => {
-    if (!boletimNumber || components.length === 0) return;
+    if (!boletimNumber) {
+      console.warn('Número do boletim necessário para adicionar ao histórico CEP');
+      return;
+    }
 
     const newSample: CEPHistoricalSample = {
-      id: `${boletimNumber}_${Date.now()}`,
+      id: Date.now().toString(),
       boletimNumber,
-      date: new Date().toISOString(),
-      components: components.reduce((acc, comp) => {
-        acc[comp.name] = parseFloat(comp.molarPercent) || 0;
-        return acc;
-      }, {} as Record<string, number>),
-      properties: properties.reduce((acc, prop) => {
-        acc[prop.id] = parseFloat(prop.value) || 0;
-        return acc;
-      }, {} as Record<string, number>)
+      dataColeta: new Date().toISOString().split('T')[0],
+      dataEmissaoRelatorio: new Date().toISOString().split('T')[0],
+      dataValidacao: new Date().toISOString().split('T')[0],
+      components: {
+        'Metano (C₁)': parseFloat(components.find(c => c.name === 'CH4')?.molarPercent || '0'),
+        'Etano (C₂)': parseFloat(components.find(c => c.name === 'C2H6')?.molarPercent || '0'),
+        'Propano (C₃)': parseFloat(components.find(c => c.name === 'C3H8')?.molarPercent || '0'),
+        'i-Butano (iC₄)': parseFloat(components.find(c => c.name === 'iC4H10')?.molarPercent || '0'),
+        'n-Butano (nC₄)': parseFloat(components.find(c => c.name === 'nC4H10')?.molarPercent || '0'),
+        'i-Pentano (iC₅)': parseFloat(components.find(c => c.name === 'iC5H12')?.molarPercent || '0'),
+        'n-Pentano (nC₅)': parseFloat(components.find(c => c.name === 'nC5H12')?.molarPercent || '0'),
+        'Hexano (C₆)': parseFloat(components.find(c => c.name === 'C6H14')?.molarPercent || '0'),
+        'Heptano (C₇)': parseFloat(components.find(c => c.name === 'C7H16')?.molarPercent || '0'),
+        'Octano (C₈)': parseFloat(components.find(c => c.name === 'C8H18')?.molarPercent || '0'),
+        'Nonano (C₉)': parseFloat(components.find(c => c.name === 'C9H20')?.molarPercent || '0'),
+        'Decano (C₁₀)': parseFloat(components.find(c => c.name === 'C10H22')?.molarPercent || '0'),
+        'Oxigênio (O₂)': parseFloat(components.find(c => c.name === 'O2')?.molarPercent || '0'),
+        'Nitrogênio (N₂)': parseFloat(components.find(c => c.name === 'N2')?.molarPercent || '0'),
+        'Dióxido de Carbono (CO₂)': parseFloat(components.find(c => c.name === 'CO2')?.molarPercent || '0'),
+      },
+      totalComposicao: components.reduce((sum, comp) => sum + (parseFloat(comp.molarPercent) || 0), 0),
+      properties: {
+        fatorCompressibilidade: parseFloat(properties.find(p => p.id === 'compressibilityFactor')?.value || '0'),
+        massaEspecifica: parseFloat(properties.find(p => p.id === 'relativeDensity')?.value || '0'),
+        massaMolecular: parseFloat(properties.find(p => p.id === 'molarMass')?.value || '0'),
+        condicaoReferencia: '20°C/1 atm'
+      },
+      editHistory: []
     };
 
-    saveToHistory(newSample);
-  }, [boletimNumber, components, properties, saveToHistory]);
+    saveHistoricalSample(newSample);
+    console.log('✅ Amostra adicionada ao histórico CEP:', newSample.id);
+    
+    // Re-executar validação para atualizar estatísticas
+    setTimeout(() => runValidation(), 500);
+  }, [components, properties, boletimNumber, saveHistoricalSample, runValidation]);
 
   // Limpar histórico
   const clearHistory = useCallback(() => {
@@ -239,15 +339,8 @@ export const useCEPValidation = (
     setComponentResults([]);
     setPropertyResults([]);
     setOverallStatus(ValidationStatus.Pendente);
+    console.log('🗑️ Histórico CEP limpo');
   }, []);
-
-  // Auto-validação quando dados mudam
-  useEffect(() => {
-    if (components.length > 0) {
-      const timer = setTimeout(runValidation, 1000); // Debounce de 1s
-      return () => clearTimeout(timer);
-    }
-  }, [components, properties, runValidation]);
 
   return {
     componentResults,
@@ -257,6 +350,6 @@ export const useCEPValidation = (
     runValidation,
     addCurrentSampleToHistory,
     clearHistory,
-    historicalSamplesCount: loadHistoricalData().length
+    getHistoricalSamples
   };
 }; 

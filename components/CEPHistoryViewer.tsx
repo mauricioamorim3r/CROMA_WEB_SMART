@@ -1,24 +1,16 @@
 /**
  * CEP History Viewer - Visualizador de Histórico CEP
- * Baseado no material de referência para exibir histórico de amostras
+ * Exibe todas as colunas conforme Excel mostrado nas imagens
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-
-interface CEPHistoricalSample {
-  id: string;
-  boletimNumber: string;
-  date: string;
-  components: Record<string, number>;
-  properties: Record<string, number>;
-}
+import { CEPHistoricalSample, CEP_COLUMNS_CONFIG } from '../types';
 
 interface CEPStatistics {
   mean: number;
   lowerControlLimit: number;
   upperControlLimit: number;
   sampleCount: number;
-  mobileRangeMean: number;
 }
 
 interface CEPHistoryViewerProps {
@@ -27,141 +19,155 @@ interface CEPHistoryViewerProps {
 }
 
 const CEP_STORAGE_KEY = 'cep_historical_samples';
-const D2_FACTOR = 1.128;
 
 const CEPHistoryViewer: React.FC<CEPHistoryViewerProps> = ({ isOpen, onClose }) => {
   const [historicalData, setHistoricalData] = useState<CEPHistoricalSample[]>([]);
   const [selectedComponent, setSelectedComponent] = useState<string>('Metano (C₁)');
   const [statistics, setStatistics] = useState<CEPStatistics | null>(null);
-  const [filteredData, setFilteredData] = useState<CEPHistoricalSample[]>([]);
 
-  // Componentes disponíveis para visualização
+  // Componentes disponíveis para seleção
   const availableComponents = [
-    'Metano (C₁)', 'Etano (C₂)', 'Propano (C₃)', 'i-Butano (iC₄)', 'n-Butano (nC₄)',
-    'Dióxido de Carbono (CO₂)', 'Nitrogênio (N₂)'
+    ...CEP_COLUMNS_CONFIG.components.map(c => c.key),
+    'fatorCompressibilidade', 'massaEspecifica', 'massaMolecular'
   ];
-
-
 
   const loadHistoricalData = useCallback(() => {
     try {
       const stored = localStorage.getItem(CEP_STORAGE_KEY);
-      const data = stored ? JSON.parse(stored) : [];
-      setHistoricalData(data);
-      setFilteredData(data);
+      const rawData = stored ? JSON.parse(stored) : [];
+      
+      // Ordenar por data de validação - mais recente primeiro
+      const sortedData = rawData.sort((a: CEPHistoricalSample, b: CEPHistoricalSample) => 
+        new Date(b.dataValidacao).getTime() - new Date(a.dataValidacao).getTime()
+      );
+      
+      setHistoricalData(sortedData);
+      console.log('✅ Histórico CEP carregado:', sortedData.length, 'amostras');
     } catch (error) {
-      console.error('Erro ao carregar histórico CEP:', error);
+      console.error('❌ Erro ao carregar histórico CEP:', error);
       setHistoricalData([]);
-      setFilteredData([]);
     }
   }, []);
 
   const calculateStatistics = useCallback((componentName: string) => {
-    const values = historicalData
-      .map(sample => sample.components[componentName] || sample.properties[componentName])
-      .filter(val => val !== undefined && val > 0)
-      .slice(0, 8); // Últimas 8 amostras
-
-    if (values.length < 2) {
+    if (historicalData.length < 2) {
       setStatistics(null);
       return;
     }
 
-    const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+    // Extrair valores válidos do componente selecionado
+    const validValues: number[] = [];
+    
+    for (const sample of historicalData) {
+      let value: number = 0;
+      
+      if (CEP_COLUMNS_CONFIG.components.some(c => c.key === componentName)) {
+        value = (sample.components as any)[componentName] || 0;
+      } else {
+        switch (componentName) {
+          case 'fatorCompressibilidade':
+            value = sample.properties.fatorCompressibilidade;
+            break;
+          case 'massaEspecifica':
+            value = sample.properties.massaEspecifica;
+            break;
+          case 'massaMolecular':
+            value = sample.properties.massaMolecular;
+            break;
+        }
+      }
+      
+      if (value > 0) {
+        validValues.push(value);
+        if (validValues.length === 8) break; // Últimas 8 amostras
+      }
+    }
+
+    if (validValues.length < 2) {
+      setStatistics(null);
+      return;
+    }
+
+    // Calcular média
+    const mean = validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
 
     // Calcular amplitudes móveis
     const mobileRanges: number[] = [];
-    for (let i = 1; i < values.length; i++) {
-      mobileRanges.push(Math.abs(values[i] - values[i - 1]));
+    for (let i = 1; i < validValues.length; i++) {
+      mobileRanges.push(Math.abs(validValues[i] - validValues[i - 1]));
     }
 
     const mobileRangeMean = mobileRanges.length > 0 
       ? mobileRanges.reduce((sum, range) => sum + range, 0) / mobileRanges.length 
       : 0;
 
-    const controlFactor = 3 * (mobileRangeMean / D2_FACTOR);
+    // Calcular limites de controle
+    const controlFactor = 3 * (mobileRangeMean / 1.128);
     const upperControlLimit = mean + controlFactor;
     const lowerControlLimit = Math.max(0, mean - controlFactor);
 
     setStatistics({
-      mean,
-      lowerControlLimit,
-      upperControlLimit,
-      sampleCount: values.length,
-      mobileRangeMean
+      mean: Number(mean.toFixed(4)),
+      lowerControlLimit: Number(lowerControlLimit.toFixed(4)),
+      upperControlLimit: Number(upperControlLimit.toFixed(4)),
+      sampleCount: validValues.length
     });
   }, [historicalData]);
 
   const exportToCSV = useCallback(() => {
-    if (filteredData.length === 0) {
+    if (historicalData.length === 0) {
       alert('Nenhum dado disponível para exportação');
       return;
     }
 
-    const headers = ['Boletim', 'Data', 'Componente/Propriedade', 'Valor', 'Status CEP'];
-    const rows: string[][] = [];
+    // Criar cabeçalhos
+    const headers = [
+      'Boletim',
+      'Data da Coleta',
+      'Data da Emissão do Relatório',
+      'Data da Validação',
+      ...CEP_COLUMNS_CONFIG.components.map(c => c.label),
+      'Total',
+      'Fator de Compressibilidade',
+      'Massa Específica',
+      'Massa Molecular',
+      'Condição de Referência'
+    ];
 
-    filteredData.forEach(sample => {
-      // Exportar componentes
-      Object.entries(sample.components).forEach(([name, value]) => {
-        if (value > 0) {
-          const isOutlier = statistics && (value < statistics.lowerControlLimit || value > statistics.upperControlLimit);
-          rows.push([
-            sample.boletimNumber,
-            new Date(sample.date).toLocaleDateString('pt-BR'),
-            name,
-            value.toFixed(4),
-            isOutlier ? 'Fora dos Limites' : 'Dentro dos Limites'
-          ]);
-        }
-      });
-
-      // Exportar propriedades
-      Object.entries(sample.properties).forEach(([id, value]) => {
-        if (value > 0) {
-          const propertyName = id === 'compressibilityFactor' ? 'Fator de Compressibilidade' :
-                              id === 'specificMass' ? 'Massa Específica' :
-                              id === 'molarMass' ? 'Massa Molar' : id;
-          const isOutlier = statistics && (value < statistics.lowerControlLimit || value > statistics.upperControlLimit);
-          rows.push([
-            sample.boletimNumber,
-            new Date(sample.date).toLocaleDateString('pt-BR'),
-            propertyName,
-            value.toFixed(4),
-            isOutlier ? 'Fora dos Limites' : 'Dentro dos Limites'
-          ]);
-        }
-      });
-    });
+    // Criar linhas de dados
+    const rows = historicalData.map(sample => [
+      sample.boletimNumber,
+      new Date(sample.dataColeta).toLocaleDateString('pt-BR'),
+      new Date(sample.dataEmissaoRelatorio).toLocaleDateString('pt-BR'),
+      new Date(sample.dataValidacao).toLocaleDateString('pt-BR'),
+      ...CEP_COLUMNS_CONFIG.components.map(c => 
+        ((sample.components as any)[c.key] || 0).toFixed(4)
+      ),
+      sample.totalComposicao.toFixed(4),
+      sample.properties.fatorCompressibilidade.toFixed(4),
+      sample.properties.massaEspecifica.toFixed(4),
+      sample.properties.massaMolecular.toFixed(4),
+      sample.properties.condicaoReferencia
+    ]);
 
     const csvContent = [headers, ...rows]
-      .map((row: string[]) => row.map((cell: string) => `"${cell}"`).join(','))
+      .map(row => row.map(cell => `"${cell}"`).join(','))
       .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `historico_cep_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `historico_cep_completo_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-  }, [filteredData, statistics]);
+  }, [historicalData]);
 
   const clearHistory = useCallback(() => {
     if (confirm('Tem certeza que deseja limpar todo o histórico CEP? Esta ação não pode ser desfeita.')) {
       localStorage.removeItem(CEP_STORAGE_KEY);
       setHistoricalData([]);
-      setFilteredData([]);
       setStatistics(null);
     }
   }, []);
-
-  const getValueForSample = (sample: CEPHistoricalSample, componentName: string): number | null => {
-    return sample.components[componentName] || sample.properties[componentName] || null;
-  };
-
-  const isOutlier = (value: number): boolean => {
-    if (!statistics) return false;
-    return value < statistics.lowerControlLimit || value > statistics.upperControlLimit;
-  };
 
   useEffect(() => {
     if (isOpen) {
@@ -170,158 +176,163 @@ const CEPHistoryViewer: React.FC<CEPHistoryViewerProps> = ({ isOpen, onClose }) 
   }, [isOpen, loadHistoricalData]);
 
   useEffect(() => {
-    if (selectedComponent && historicalData.length > 0) {
-      calculateStatistics(selectedComponent);
-    }
-  }, [selectedComponent, historicalData, calculateStatistics]);
+    calculateStatistics(selectedComponent);
+  }, [selectedComponent, calculateStatistics]);
 
   if (!isOpen) return null;
 
+  // Todas as colunas para exibição
+  const allDisplayColumns = [
+    { key: 'boletimNumber', label: 'Boletim' },
+    { key: 'dataColeta', label: 'Data da Coleta' },
+    { key: 'dataEmissaoRelatorio', label: 'Data da Emissão' },
+    { key: 'dataValidacao', label: 'Data da Validação' },
+    ...CEP_COLUMNS_CONFIG.components,
+    { key: 'totalComposicao', label: 'TOTAL' },
+    { key: 'fatorCompressibilidade', label: 'Fator de Compressibilidade' },
+    { key: 'massaEspecifica', label: 'Massa Específica' },
+    { key: 'massaMolecular', label: 'Massa Molecular' },
+    { key: 'condicaoReferencia', label: 'Condição de Referência' }
+  ];
+
+  const getDisplayValue = (sample: CEPHistoricalSample, columnKey: string): string => {
+    switch (columnKey) {
+      case 'boletimNumber':
+        return sample.boletimNumber;
+      case 'dataColeta':
+        return new Date(sample.dataColeta).toLocaleDateString('pt-BR');
+      case 'dataEmissaoRelatorio':
+        return new Date(sample.dataEmissaoRelatorio).toLocaleDateString('pt-BR');
+      case 'dataValidacao':
+        return new Date(sample.dataValidacao).toLocaleDateString('pt-BR');
+      case 'totalComposicao':
+        return sample.totalComposicao.toFixed(4);
+      case 'fatorCompressibilidade':
+        return sample.properties.fatorCompressibilidade.toFixed(4);
+      case 'massaEspecifica':
+        return sample.properties.massaEspecifica.toFixed(4);
+      case 'massaMolecular':
+        return sample.properties.massaMolecular.toFixed(4);
+      case 'condicaoReferencia':
+        return sample.properties.condicaoReferencia;
+      default:
+        // É um componente
+        const value = (sample.components as any)[columnKey] || 0;
+        return value.toFixed(4);
+    }
+  };
+
   return (
-    <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 max-w-7xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Histórico CEP - Controle Estatístico de Processo</h2>
-          <button
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-screen m-4 flex flex-col">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📊</span>
+            <h2 className="text-xl font-bold text-gray-800">Visualizar Histórico CEP</h2>
+            <span className="text-sm text-gray-500">({historicalData.length} amostras)</span>
+          </div>
+          <button 
             onClick={onClose}
-            className="text-2xl font-bold text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 text-2xl"
           >
             ×
           </button>
         </div>
 
-        {historicalData.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-lg text-gray-600">Nenhum histórico disponível</p>
-            <p className="text-gray-500">Execute validações CEP para gerar histórico</p>
+        {/* Controls */}
+        <div className="p-4 border-b bg-gray-50 flex items-center gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Componente/Propriedade:
+            </label>
+            <select
+              value={selectedComponent}
+              onChange={(e) => setSelectedComponent(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {availableComponents.map(comp => (
+                <option key={comp} value={comp}>
+                  {CEP_COLUMNS_CONFIG.components.find(c => c.key === comp)?.label || comp}
+                </option>
+              ))}
+            </select>
           </div>
-        ) : (
-          <>
-            {/* Controles */}
-            <div className="flex flex-wrap gap-4 items-center mb-6">
+
+          <div className="flex gap-2">
+            <button
+              onClick={exportToCSV}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+            >
+              📄 Exportar CSV
+            </button>
+            <button
+              onClick={clearHistory}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+            >
+              🗑️ Limpar Histórico
+            </button>
+          </div>
+        </div>
+
+        {/* Statistics */}
+        {statistics && (
+          <div className="p-4 bg-blue-50 border-b">
+            <h4 className="font-bold text-blue-800 mb-2">Estatísticas CEP - {selectedComponent}</h4>
+            <div className="grid grid-cols-4 gap-4 text-sm">
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Componente/Propriedade:
-                </label>
-                <select
-                  value={selectedComponent}
-                  onChange={(e) => setSelectedComponent(e.target.value)}
-                  className="px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <optgroup label="Componentes">
-                    {availableComponents.map(comp => (
-                      <option key={comp} value={comp}>{comp}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Propriedades">
-                    <option value="compressibilityFactor">Fator de Compressibilidade</option>
-                    <option value="specificMass">Massa Específica</option>
-                    <option value="molarMass">Massa Molar</option>
-                  </optgroup>
-                </select>
+                <span className="text-gray-600">Média (X̄):</span>
+                <div className="font-mono font-bold">{statistics.mean}</div>
               </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={exportToCSV}
-                  className="px-4 py-2 text-white bg-green-600 rounded-md transition-colors hover:bg-green-700"
-                >
-                  📊 Exportar CSV
-                </button>
-                <button
-                  onClick={clearHistory}
-                  className="px-4 py-2 text-white bg-red-600 rounded-md transition-colors hover:bg-red-700"
-                >
-                  🗑️ Limpar Histórico
-                </button>
+              <div>
+                <span className="text-gray-600">LCI:</span>
+                <div className="font-mono font-bold text-red-600">{statistics.lowerControlLimit}</div>
+              </div>
+              <div>
+                <span className="text-gray-600">LCS:</span>
+                <div className="font-mono font-bold text-red-600">{statistics.upperControlLimit}</div>
+              </div>
+              <div>
+                <span className="text-gray-600">Amostras:</span>
+                <div className="font-mono font-bold">{statistics.sampleCount}</div>
               </div>
             </div>
-
-            {/* Estatísticas */}
-            {statistics && (
-              <div className="p-4 mb-6 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="mb-2 font-semibold text-blue-800">Estatísticas CEP - {selectedComponent}</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                  <div>
-                    <span className="font-medium">Média (x̄):</span>
-                    <div className="text-blue-700">{statistics.mean.toFixed(4)}</div>
-                  </div>
-                  <div>
-                    <span className="font-medium">LCI:</span>
-                    <div className="text-green-700">{statistics.lowerControlLimit.toFixed(4)}</div>
-                  </div>
-                  <div>
-                    <span className="font-medium">LCS:</span>
-                    <div className="text-red-700">{statistics.upperControlLimit.toFixed(4)}</div>
-                  </div>
-                  <div>
-                    <span className="font-medium">Amostras:</span>
-                    <div className="text-gray-700">{statistics.sampleCount}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tabela de Histórico */}
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-300">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left border border-gray-300">Boletim</th>
-                    <th className="px-4 py-2 text-left border border-gray-300">Data</th>
-                    <th className="px-4 py-2 text-left border border-gray-300">Valor</th>
-                    <th className="px-4 py-2 text-left border border-gray-300">Status CEP</th>
-                    <th className="px-4 py-2 text-left border border-gray-300">Amplitude Móvel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.map((sample, index) => {
-                    const value = getValueForSample(sample, selectedComponent);
-                    if (value === null) return null;
-
-                    const isValueOutlier = isOutlier(value);
-                    const prevSample = filteredData[index + 1];
-                    const prevValue = prevSample ? getValueForSample(prevSample, selectedComponent) : null;
-                    const mobileRange = prevValue !== null ? Math.abs(value - prevValue) : null;
-
-                    return (
-                      <tr key={sample.id} className={isValueOutlier ? 'bg-red-50' : 'bg-white'}>
-                        <td className="px-4 py-2 border border-gray-300">{sample.boletimNumber}</td>
-                        <td className="px-4 py-2 border border-gray-300">
-                          {new Date(sample.date).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className={`border border-gray-300 px-4 py-2 font-mono ${isValueOutlier ? 'font-bold text-red-700' : ''}`}>
-                          {value.toFixed(4)}
-                        </td>
-                        <td className="px-4 py-2 border border-gray-300">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            isValueOutlier 
-                              ? 'text-red-800 bg-red-100' 
-                              : 'text-green-800 bg-green-100'
-                          }`}>
-                            {isValueOutlier ? '❌ Fora dos Limites' : '✅ Dentro dos Limites'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 font-mono border border-gray-300">
-                          {mobileRange !== null ? mobileRange.toFixed(4) : '-'}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Resumo */}
-            <div className="mt-6 text-sm text-gray-600">
-              <p>
-                <strong>Total de amostras:</strong> {historicalData.length} | 
-                <strong> Metodologia:</strong> LCS = x̄ + 3(MR̄/1.128), LCI = x̄ - 3(MR̄/1.128) | 
-                <strong> Base de cálculo:</strong> Últimas 8 amostras válidas
-              </p>
-            </div>
-          </>
+          </div>
         )}
+
+        {/* Data Table */}
+        <div className="flex-1 overflow-auto p-4">
+          {historicalData.length > 0 ? (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-blue-600">
+                  {allDisplayColumns.map(col => (
+                    <th key={col.key} className="border border-gray-400 px-2 py-3 text-xs font-bold text-white min-w-[100px]">
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {historicalData.map((sample, index) => (
+                  <tr key={sample.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    {allDisplayColumns.map(col => (
+                      <td key={col.key} className="border border-gray-300 px-2 py-2 text-xs font-mono">
+                        {getDisplayValue(sample, col.key)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-lg">📭 Nenhum dado histórico CEP encontrado</p>
+              <p className="text-sm mt-2">Execute algumas validações CEP para gerar dados históricos</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

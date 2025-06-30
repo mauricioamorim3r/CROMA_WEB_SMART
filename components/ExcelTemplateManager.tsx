@@ -139,8 +139,8 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
       });
       csvContent += ',,,,\n';
 
-      // Seção 9: Observações (apenas coluna C)
-      csvContent += '9. OBSERVAÇÕES,,,,\n';
+      // Seção 7: Observações (apenas coluna C)
+      csvContent += '7. OBSERVAÇÕES,,,,\n';
       csvContent += ',Observações do Boletim,,Observações e comentários sobre o boletim analítico,\n';
       csvContent += ',Número Único Rastreabilidade,,Código único de rastreabilidade,\n';
       csvContent += ',Número do Boletim,,Número de identificação do boletim,\n';
@@ -322,8 +322,8 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
       });
       csvContent += ',,,,\n';
 
-      // Seção 9: Observações (com dados apenas em C)
-      csvContent += '9. OBSERVAÇÕES,,,,\n';
+      // Seção 7: Observações (apenas coluna C)
+      csvContent += '7. OBSERVAÇÕES,,,,\n';
       csvContent += `,Observações do Boletim,"${reportData.observacoesBoletim || ''}",Observações e comentários sobre o boletim analítico,\n`;
       csvContent += `,Número Único Rastreabilidade,"${reportData.numeroUnicoRastreabilidade || ''}",Código único de rastreabilidade,\n`;
       csvContent += `,Número do Boletim,"${reportData.numeroBoletim || ''}",Número de identificação do boletim,\n`;
@@ -1075,7 +1075,7 @@ const ExcelTemplateManager: React.FC<ExcelTemplateManagerProps> = ({
                 <ul className="ml-4 space-y-1 list-disc list-inside">
                   <li><strong>Seção 2-4:</strong> Informações gerais (apenas coluna C)</li>
                   <li><strong>Seção 5-8:</strong> Dados técnicos (colunas C e D)</li>
-                  <li><strong>Seção 9:</strong> Observações (apenas coluna C)</li>
+                  <li><strong>Seção 7:</strong> Observações (apenas coluna C)</li>
                 </ul>
               </div>
             </div>

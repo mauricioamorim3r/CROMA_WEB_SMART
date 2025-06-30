@@ -19,8 +19,8 @@ const AirContaminationTable: React.FC<AirContaminationTableProps> = ({ propertie
     <div className="p-4 mb-6 bg-white rounded-xl shadow-md">
       <h2 className="enhanced-section-title">8. CONTAMINAÇÃO POR AR</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
+        <table className="min-w-full table-with-relief bg-white">
+          <thead className="table-header-blue">
             <tr>
               <th className={TABLE_TH_CLASS}>Contaminante</th>
               <th className={TABLE_TH_CLASS}>% mol</th>

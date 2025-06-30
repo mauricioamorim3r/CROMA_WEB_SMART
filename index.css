@@ -89,6 +89,84 @@
     --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
+
+  /* Estilo para cabeçalhos de tabelas com cantos arredondados */
+  .table-header-blue {
+    background-color: #2563eb; /* blue-600 */
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+  
+  .table-header-blue th:first-child {
+    border-top-left-radius: 0.5rem;
+  }
+  
+  .table-header-blue th:last-child {
+    border-top-right-radius: 0.5rem;
+  }
+  
+  /* Estilo para tabelas com bordas arredondadas */
+  .rounded-table {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid #d1d5db;
+  }
+  
+  .rounded-table thead {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+
+  /* Estilo para tabelas com efeito de relevo e bordas cinza suaves */
+  .table-with-relief {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+  }
+
+  .table-with-relief thead {
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .table-with-relief tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.15s ease-in-out;
+  }
+
+  .table-with-relief tbody tr:hover {
+    background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .table-with-relief td {
+    border-right: 1px solid #e5e7eb;
+    position: relative;
+  }
+
+  .table-with-relief td:last-child {
+    border-right: none;
+  }
+
+  /* Efeito de relevo nas células */
+  .table-with-relief tbody tr:nth-child(even) {
+    background: linear-gradient(145deg, #f9fafb, #f3f4f6);
+  }
+
+  .table-with-relief tbody tr:nth-child(odd) {
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+  }
 }
 
 @layer utilities {

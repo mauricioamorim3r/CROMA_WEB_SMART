@@ -27,22 +27,22 @@ export const INITIAL_DATE_VALIDATION_DETAILS: DateValidationDetails = {
 
 
 export const INITIAL_COMPONENTS: ComponentData[] = [
-  { id: 1, name: 'Metano (C₁)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 100, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 1, name: 'Metano (C₁)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 70, aga8Max: 100, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   { id: 2, name: 'Etano (C₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 10.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 3, name: 'Propano (C₃)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 4.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 4, name: 'i-Butano (iC₄)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.4, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 5, name: 'n-Butano (nC₄)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.6, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 6, name: 'i-Pentano (iC₅)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.3, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 7, name: 'n-Pentano (nC₅)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.3, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 8, name: 'Hexano (C₆)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.12, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente }, 
-  { id: 9, name: 'Heptano (C₇)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.04, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 10, name: 'Octano (C₈)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.03, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 11, name: 'Nonano (C₉)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.03, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 12, name: 'Decano (C₁₀)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.03, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 13, name: 'Nitrogênio (N₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 50.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 14, name: 'Dióxido de Carbono (CO₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 30.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente }, // Base max for CO2 from Range A
-  { id: 15, name: 'Sulfeto de Hidrogênio (H₂S)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.1, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
-  { id: 16, name: 'Oxigênio (O₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.2, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 3, name: 'Propano (C₃)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 3.5, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 4, name: 'i-Butano (iC₄)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 1.5, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 5, name: 'n-Butano (nC₄)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 1.5, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 6, name: 'i-Pentano (iC₅)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.5, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 7, name: 'n-Pentano (nC₅)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.5, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 8, name: 'Hexano (C₆)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.15, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente }, 
+  { id: 9, name: 'Heptano (C₇)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.05, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 10, name: 'Octano (C₈)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.05, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 11, name: 'Nonano (C₉)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.05, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 12, name: 'Decano (C₁₀)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.05, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 13, name: 'Nitrogênio (N₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 20.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 14, name: 'Dióxido de Carbono (CO₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 20.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente }, // Pipeline Quality AGA-8 Part 2
+  { id: 15, name: 'Sulfeto de Hidrogênio (H₂S)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.02, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
+  { id: 16, name: 'Oxigênio (O₂)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.02, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   // Componentes AGA-8 adicionais (Range A)
   { id: 20, name: 'Água (H₂O)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 0.05, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
   { id: 21, name: 'Monóxido de Carbono (CO)', molarPercent: '', incertezaAssociadaPercent: '', aga8Min: 0, aga8Max: 1.0, cepLowerLimit: '', cepUpperLimit: '', aga8Status: ValidationStatus.Pendente, cepStatus: ValidationStatus.Pendente },
@@ -96,10 +96,10 @@ export const INITIAL_CHECKLIST_ITEMS: ChecklistItem[] = [
 ];
 
 export const INITIAL_REGULATORY_COMPLIANCE_ITEMS: RegulatoryComplianceItem[] = [
-    { id: 'metano_aga8', parameter: 'Metano (C₁)', limit: '≥ 60,0 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
-    { id: 'co2_aga8', parameter: 'Dióxido de carbono (CO₂)', limit: '≤ 30,0 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
-    { id: 'n2_aga8', parameter: 'Nitrogênio (N₂)', limit: '≤ 50,0 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
-    { id: 'h2s_aga8', parameter: 'Sulfeto de hidrogênio (H₂S)', limit: '≤ 0,1 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
+    { id: 'metano_aga8', parameter: 'Metano (C₁)', limit: '≥ 70,0 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
+    { id: 'co2_aga8', parameter: 'Dióxido de carbono (CO₂)', limit: '≤ 20,0 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
+    { id: 'n2_aga8', parameter: 'Nitrogênio (N₂)', limit: '≤ 20,0 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
+    { id: 'h2s_aga8', parameter: 'Sulfeto de hidrogênio (H₂S)', limit: '≤ 0,02 % mol', bulletinValue: '', status: ValidationStatus.Pendente },
     { id: 'temperatura_aga8', parameter: 'Temperatura', limit: '-4°C a 62°C', bulletinValue: '', status: ValidationStatus.Pendente },
     { id: 'pressao_aga8', parameter: 'Pressão', limit: '≤ 10.342 kPa (DETAIL)', bulletinValue: '', status: ValidationStatus.Pendente },
 ];
@@ -133,6 +133,7 @@ export const AVAILABLE_TEMPLATES: ReportTemplate[] = [
         dataAnaliseLaboratorial: '',
         dataEmissaoBoletim: '',
         dataRecebimentoBoletimSolicitante: '',
+        dataImplementacao: '',
         tipoProcesso: ProcessType.ProcessoNormal
       },
       components: INITIAL_COMPONENTS.map(comp => ({
@@ -164,6 +165,7 @@ export const AVAILABLE_TEMPLATES: ReportTemplate[] = [
         dataAnaliseLaboratorial: '',
         dataEmissaoBoletim: '',
         dataRecebimentoBoletimSolicitante: '',
+        dataImplementacao: '',
         tipoProcesso: ProcessType.ProcessoNormal
       },
       components: INITIAL_COMPONENTS.map(comp => ({
@@ -195,6 +197,7 @@ export const AVAILABLE_TEMPLATES: ReportTemplate[] = [
         dataAnaliseLaboratorial: '',
         dataEmissaoBoletim: '',
         dataRecebimentoBoletimSolicitante: '',
+        dataImplementacao: '',
         tipoProcesso: ProcessType.ProcessoNormal
       },
       components: INITIAL_COMPONENTS.map(comp => ({
@@ -224,6 +227,7 @@ export const AVAILABLE_TEMPLATES: ReportTemplate[] = [
         dataAnaliseLaboratorial: '',
         dataEmissaoBoletim: '',
         dataRecebimentoBoletimSolicitante: '',
+        dataImplementacao: '',
         tipoProcesso: ProcessType.ProcessoNormal
       },
       standardProperties: INITIAL_STANDARD_PROPERTIES.map(prop => ({
@@ -239,7 +243,7 @@ export const AVAILABLE_TEMPLATES: ReportTemplate[] = [
 
 export const INPUT_CLASS = "mt-1 block w-full px-3 py-2 bg-white border-2 border-gray-500 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-lime-custom focus:border-lime-custom sm:text-sm disabled:bg-gray-100 disabled:text-gray-500 hover:border-gray-600 transition-colors duration-200";
 export const LABEL_CLASS = "block text-sm font-medium text-gray-700";
-export const TABLE_TH_CLASS = "px-4 py-2 text-center text-xs font-medium text-lime-custom uppercase tracking-wider bg-purple-custom";
+export const TABLE_TH_CLASS = "px-4 py-3 text-xs font-bold tracking-wider text-center text-white uppercase bg-blue-600 border-r border-blue-400/50";
 export const TABLE_TD_CLASS = "px-4 py-2 whitespace-nowrap text-sm text-gray-700 border-b border-gray-200";
 export const SECTION_TITLE_CLASS = "text-xl font-semibold text-lime-custom bg-purple-custom p-3 my-4 rounded-t-md border border-gray-300 shadow-sm";
 export const SUB_SECTION_TITLE_CLASS = "text-lg font-semibold text-gray-800 my-3 pb-1 border-b border-gray-300"; 

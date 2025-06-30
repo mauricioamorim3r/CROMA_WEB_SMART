@@ -19,8 +19,8 @@ const SamplingConditionsPropertiesTable: React.FC<SamplingConditionsPropertiesTa
     <div className="p-4 mb-6 bg-white rounded-xl shadow-md">
       <h2 className="enhanced-section-title">7. PROPRIEDADES DO GÁS – CONDIÇÕES DE AMOSTRAGEM</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
+        <table className="min-w-full table-with-relief bg-white">
+          <thead className="table-header-blue">
             <tr>
               <th className={TABLE_TH_CLASS}>Propriedade</th>
               <th className={TABLE_TH_CLASS}>Valor</th>

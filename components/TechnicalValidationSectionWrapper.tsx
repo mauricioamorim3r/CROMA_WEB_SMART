@@ -191,6 +191,28 @@ const Aga8ValidationDisplay: React.FC<{data: ReportData['aga8ValidationData'], o
           </p>
         </div>
       )}
+      
+      {/* Mostrar Parâmetros AGA-8 Utilizados */}
+      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h4 className="text-sm font-medium text-blue-800 mb-2">📋 Parâmetros AGA-8 Utilizados:</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div>
+            <span className="font-medium text-blue-700">Método:</span>
+            <div className="text-blue-600">{data.zCalculadoPorMetodo || 'Detalhado (padrão)'}</div>
+          </div>
+          <div>
+            <span className="font-medium text-blue-700">Faixa de Pressão:</span>
+            <div className="text-blue-600">{data.faixaPressaoValida || '0 a 70 MPa'}</div>
+          </div>
+          <div>
+            <span className="font-medium text-blue-700">Faixa de Temperatura:</span>
+            <div className="text-blue-600">{data.faixaTemperaturaValida || '-30°C a 150°C'}</div>
+          </div>
+        </div>
+        <div className="mt-2 text-xs text-blue-600">
+          <span className="font-medium">Critério:</span> AGA-8 Detailed Characterization Method (ISO 12213-2)
+        </div>
+      </div>
     </div>
   );
 };
@@ -200,8 +222,8 @@ const RegulatoryComplianceDisplay: React.FC<{items: ReportData['regulatoryCompli
     <div className="p-4 mb-4 bg-white rounded-xl shadow-inner">
       <h3 className="enhanced-section-title">12. CONFORMIDADE AGA-8 (AGA Report No. 8 - Detail Method)</h3>
        <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
+        <table className="min-w-full table-with-relief bg-white">
+          <thead className="table-header-blue">
             <tr>
               <th className={TABLE_TH_CLASS}>Parâmetro</th>
               <th className={TABLE_TH_CLASS}>Limite Regulatório</th>

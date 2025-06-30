@@ -46,6 +46,51 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
   const generatePDFContent = (): string => {
     const { components, aga8ValidationData } = reportData;
     
+    // ✅ SEÇÃO QUALIDADE - Função para adicionar seção de qualidade no PDF
+    const addQualitySection = (): string => {
+      if (!reportData.gasQuality) return '';
+      
+      // ✅ CORREÇÃO LINTER - Verificação segura de qualityValidationDetails
+      const hasViolations = reportData.qualityValidationDetails?.violations?.pipeline?.length && 
+                           reportData.qualityValidationDetails.violations.pipeline.length > 0;
+      
+      const violationsList = reportData.qualityValidationDetails?.violations?.pipeline || [];
+      
+      return `
+        <!-- Quality Classification Section -->
+        <div style="margin-bottom: 25px;">
+          <h3 style="background: #1b0571; color: #d5fb00; padding: 8px 12px; margin: 0 0 15px 0; border-radius: 4px; font-size: 14px;">
+            3. CLASSIFICAÇÃO DE QUALIDADE - AGA-8 PART 2
+          </h3>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px; background: #f9f9f9; font-weight: bold; width: 30%;">Qualidade do Gás:</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${reportData.gasQuality}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px; background: #f9f9f9; font-weight: bold;">Método de Validação:</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${reportData.validationMethod || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px; background: #f9f9f9; font-weight: bold;">Faixa Operacional:</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${reportData.operationalRange?.toUpperCase() || 'N/A'}</td>
+            </tr>
+          </table>
+          
+          ${hasViolations ? `
+          <div style="margin-top: 15px; padding: 10px; border: 2px solid #dc2626; border-radius: 8px; background: #fef2f2;">
+            <h4 style="margin: 0 0 10px 0; color: #dc2626; font-weight: bold;">Violações Pipeline Quality:</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #dc2626;">
+              ${violationsList.map(violation => 
+                `<li style="margin-bottom: 5px;">${violation}</li>`
+              ).join('')}
+            </ul>
+          </div>
+          ` : ''}
+        </div>
+      `;
+    };
+    
     return `
       <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #333;">
         <!-- Header -->
@@ -116,10 +161,13 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
           </table>
         </div>
 
+        <!-- ✅ INSERÇÃO SEÇÃO QUALIDADE - Adicionar seção de qualidade após composição e antes da validação CEP -->
+        ${addQualitySection()}
+
         <!-- AGA Validation -->
         <div style="margin-bottom: 25px;">
           <h3 style="background: #1b0571; color: #d5fb00; padding: 8px 12px; margin: 0 0 15px 0; border-radius: 4px; font-size: 14px;">
-            3. VALIDAÇÃO A.G.A Report Nº8
+            4. VALIDAÇÃO A.G.A Report Nº8
           </h3>
           <div style="padding: 15px; border: 2px solid #059669; border-radius: 8px; background: #f0fdf4;">
             <p style="margin: 0 0 10px 0; font-weight: bold; color: #059669;">
